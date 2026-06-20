@@ -702,7 +702,9 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
 /* feedback: big character popping out of the top-right corner (overflow ok) */
 #feedback .fb-inner{ position:relative; }
 .fb-coach{ position:absolute; top:-72px; right:6px; width:128px; height:auto; object-fit:contain; margin:0; z-index:2;
-  pointer-events:none; filter:drop-shadow(0 6px 12px rgba(27,36,51,.22)); animation:fbCoachPop .42s cubic-bezier(.22,1,.36,1); }
+  pointer-events:none; filter:drop-shadow(0 6px 12px rgba(27,36,51,.22)); opacity:0; transition:opacity .15s ease; }
+/* only visible while the feedback bar is up — prevents the head peeking at the bottom when hidden */
+#feedback.show .fb-coach{ opacity:1; animation:fbCoachPop .42s cubic-bezier(.22,1,.36,1); }
 @keyframes fbCoachPop{ from{opacity:0; transform:translateY(12px) scale(.85)} to{opacity:1; transform:none} }
 /* result + report: bigger character */
 .res-coach{ display:block; width:150px; height:auto; object-fit:contain; margin:2px auto 0; }

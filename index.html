@@ -699,9 +699,17 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
 .subj-soon{ margin-left:auto; font-size:12px; color:var(--muted); font-weight:700; }
 
 /* ---- contextual coach photos (feedback / result / report) ---- */
-.fb-coach{ display:block; width:56px; height:56px; object-fit:contain; margin:0 auto 6px; }
-.res-coach{ display:block; width:84px; height:84px; object-fit:contain; margin:0 auto 6px; }
-.rep-coach{ display:block; width:72px; height:72px; object-fit:contain; margin:0 auto 2px; }
+/* feedback: big character popping out of the top-right corner (overflow ok) */
+#feedback .fb-inner{ position:relative; }
+.fb-coach{ position:absolute; top:-72px; right:6px; width:128px; height:auto; object-fit:contain; margin:0; z-index:2;
+  pointer-events:none; filter:drop-shadow(0 6px 12px rgba(27,36,51,.22)); animation:fbCoachPop .42s cubic-bezier(.22,1,.36,1); }
+@keyframes fbCoachPop{ from{opacity:0; transform:translateY(12px) scale(.85)} to{opacity:1; transform:none} }
+/* result + report: bigger character */
+.res-coach{ display:block; width:150px; height:auto; object-fit:contain; margin:2px auto 0; }
+.rep-coach{ display:block; width:124px; height:auto; object-fit:contain; margin:0 auto 0; }
+/* smaller celebration icons so the character stands out */
+.medal{ font-size:38px !important; }
+.rep-burst{ font-size:26px !important; }
 </style>
 </head>
 <body>

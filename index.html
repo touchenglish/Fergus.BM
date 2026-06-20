@@ -684,6 +684,24 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
 .rst-ic{ font-size:40px; line-height:1; margin-bottom:8px; }
 .rst-h{ font-size:18px; margin:0 0 8px; color:var(--ink); }
 .rst-p{ font-size:14px; line-height:1.6; color:var(--muted); margin:0 0 18px; }
+
+/* ---- subject switcher ---- */
+#subjswitch{ font-size:16px; }
+.subj-h{ font-size:17px; margin:0 0 14px; color:var(--ink); }
+.subj-list{ display:flex; flex-direction:column; gap:10px; }
+.subj-row{ display:flex; align-items:center; gap:12px; width:100%; padding:14px; border:1.5px solid var(--line);
+  border-radius:16px; background:var(--surface); font:inherit; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; }
+.subj-row.active{ border-color:var(--brand); background:color-mix(in srgb, var(--brand) 8%, var(--surface)); }
+.subj-row:disabled{ opacity:.55; cursor:default; }
+.subj-ic{ font-size:24px; line-height:1; }
+.subj-nm{ font-size:16px; font-weight:800; color:var(--ink); }
+.subj-tag{ margin-left:auto; color:var(--brand); font-weight:800; font-size:18px; }
+.subj-soon{ margin-left:auto; font-size:12px; color:var(--muted); font-weight:700; }
+
+/* ---- contextual coach photos (feedback / result / report) ---- */
+.fb-coach{ display:block; width:56px; height:56px; object-fit:contain; margin:0 auto 6px; }
+.res-coach{ display:block; width:84px; height:84px; object-fit:contain; margin:0 auto 6px; }
+.rep-coach{ display:block; width:72px; height:72px; object-fit:contain; margin:0 auto 2px; }
 </style>
 </head>
 <body>
@@ -696,6 +714,7 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
    <span class="chip streak"><span class="ic">🔥</span><span id="stval">0</span></span>
    <button class="iconbtn" id="soundbtn" aria-label="sound on/off"></button>
    <button class="langbtn" id="langswitch">文A</button>
+   <button class="langbtn" id="subjswitch" aria-label="subject">📖</button>
   </div>
  </div>
 </div>
@@ -785,6 +804,7 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
  <!-- RESULT -->
  <div id="scr-result" class="result hidden">
   <div class="medal" id="medal">🎉</div>
+  <img class="res-coach" id="rescoach" src="assets/characters/fergus_5.png" alt="" onerror="this.onerror=null;this.style.display='none'">
   <h2 id="restitle"></h2>
   <p class="sub" id="ressub"></p>
   <div class="rstats">
@@ -810,6 +830,7 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
  </button>
 </div></nav>
 <div id="feedback"><div class="fb-inner">
+ <img class="fb-coach" id="fbcoach" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">
  <div class="fb-head"><span class="ic" id="fbic">✓</span><b id="fbtitle"></b><span class="xpgain" id="fbxp"></span></div>
  <div class="fb-meaning" id="fbmeaning"></div>
  <div class="fb-corr" id="fbcorr"></div>
@@ -817,7 +838,7 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
  <button class="btn btn-block" id="fbbtn">Continue</button>
 </div></div>
 <script>
-const COURSE = [
+let COURSE = [
 {
  "id":"set1",
  "title":{"ms":"Set 1 · UPSA Bahasa Melayu","zh":"第一套 · UPSA 马来文","en":"Set 1 · UPSA Malay"},
@@ -947,7 +968,7 @@ const COURSE = [
 ];
 
 /* ---- flat index of objective questions (for stable-id review) ---- */
-const QINDEX = {};
+let QINDEX = {};
 COURSE.forEach((m,mi)=>m.lessons.forEach((l,li)=>{
  (l.items||[]).forEach(it=>{
   if(it.id && (it.kind==="mcq"||it.kind==="fill"))
@@ -1199,6 +1220,270 @@ COURSE.forEach(m=>{ const r=RECAP[m.id]; if(r) m.lessons.forEach((l,i)=>{ if(r[i
  });
 })();
 
+
+/* ===================== SUBJECTS ===================== */
+/* Wrap all current content as the "bm" subject. Add more subjects by
+   defining SUBJECT_COURSES.<id> = [ ...modules... ] and a SUBJECTS entry. */
+const SUBJECT_COURSES = { bm: COURSE };
+const SUBJECTS = [
+ { id:"bm",   icon:"📖", name:{ms:"Bahasa Melayu", zh:"马来文", en:"Malay"},
+   brand:{ms:"BM Tahun 5", zh:"BM · 五年级", en:"BM · Year 5"}, logo:"BM" },
+ { id:"sej",  icon:"🏛️", name:{ms:"Sejarah", zh:"历史", en:"History"},
+   brand:{ms:"Sejarah 5C", zh:"历史 · 5C", en:"History · 5C"}, logo:"史" },
+ { id:"sci",  icon:"🔬", name:{ms:"Sains", zh:"科学", en:"Science"},
+   brand:{ms:"Sains 5C", zh:"科学 · 5C", en:"Science · 5C"}, logo:"科" }
+];
+let SUBJECT = "bm";
+function subjectMeta(id){ return SUBJECTS.find(s=>s.id===id) || SUBJECTS[0]; }
+function subjectReady(id){ return !!SUBJECT_COURSES[id]; }
+function pkey(k){ return "te1_"+SUBJECT+"_"+k; }
+function buildIndex(){
+ QINDEX = {};
+ COURSE.forEach(m=>m.lessons.forEach(l=>{
+  (l.items||[]).forEach(it=>{ if(it.id && (it.kind==="mcq"||it.kind==="fill")) QINDEX[it.id]={kind:it.kind, it:it, passage:l.passage||null}; });
+ }));
+}
+function loadSubject(id){ if(!SUBJECT_COURSES[id]) id="bm"; SUBJECT=id; COURSE=SUBJECT_COURSES[id]; buildIndex(); }
+
+/* ============================================================
+   SUBJECT: 历史 Sejarah (5C) — Theme 6 & 7
+   Chinese-medium. Authored zh-only for t/e/recap; ms/en auto-filled.
+   ============================================================ */
+SUBJECT_COURSES.sej = [
+ {
+  "id":"t6",
+  "title":{"zh":"主题六 · 我们的国家遗产"},
+  "lessons":[
+   { "type":"grammar","t":{"zh":"君主制度"},"draw":5,
+     "recap":[
+      {"ic":"👑","zh":"联邦直辖区（吉隆坡·布城·纳闽）没有苏丹，由「国家元首」统辖。"},
+      {"ic":"🤝","zh":"君臣协议：人民效忠君主、君主公正治民 → 对应国家原则「忠于君国」。"},
+      {"ic":"⚖️","zh":"「君权」= 君主对其政府的执政权力。"},
+      {"ic":"🏛️","zh":"我国独立至今实行「君主立宪制度」。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"h611","q":"我国联邦直辖区（吉隆坡、布城、纳闽）的统治者是谁？","o":["国家元首","苏丹","拉惹","州元首"],"a":0,"e":{"zh":"联邦直辖区没有苏丹，由国家元首（最高元首）统辖。"}},
+      {"kind":"mcq","id":"h612","q":"君臣协议中的「效忠」概念，反映在我国哪条国家原则？","o":["忠于君国","信奉上苍","培养德行","维护宪法"],"a":0,"e":{"zh":"效忠君主与国家 = 国家原则「忠于君国」。"}},
+      {"kind":"mcq","id":"h613","q":"什么是「君权」？","o":["君主对其政府的执政权力","君主对国家宗教的决定权","君主对婚姻制度的管理权","君主干政他国的权力"],"a":0,"e":{"zh":"君权指君主对其政府执政的权力。"}},
+      {"kind":"mcq","id":"h614","q":"我国从独立至今的君主制度是？","o":["成立君主立宪制度","成立君主独裁制度","确认地方分权制度","确认中央集权制度"],"a":0,"e":{"zh":"我国实行君主立宪制度。"}},
+      {"kind":"mcq","id":"h615","q":"下列哪项是珍惜我国君主制度的体现？","o":["遵循我国君主旨意","违背我国君主命令","无视我国君主制度","批评我国君主制度落后"],"a":0,"e":{"zh":"珍惜君主制度 = 遵循君主旨意。"}},
+      {"kind":"mcq","id":"h616","q":"国民珍惜与维护君主制度的重要性是？（选正确组合）","o":["君主制度是我国遗产 + 国家团结象征","人民畏惧高高在上的君主","君主能够随意更改国家宪法","君主制度落后，需要废除"],"a":0,"e":{"zh":"君主制度是国家遗产，也是团结的象征。"}},
+      {"kind":"mcq","id":"h617","q":"判断：在君臣协议中，君主须公正无私地统治人民。","o":["正确","错误"],"a":0,"e":{"zh":"对。君主公正治民、人民效忠君主，是君臣协议的核心。"}}
+     ]
+   },
+   { "type":"grammar","t":{"zh":"伊斯兰教与宗教"},"draw":5,
+     "recap":[
+      {"ic":"🕊️","zh":"教义速记：泛灵论=万物有灵 · 兴都教=轮回业报 · 佛教=八正道 · 伊斯兰教=五功六信 · 基督教=三一论。"},
+      {"ic":"🪨","zh":"两块石碑（伊斯兰传入证据）：登嘉楼石碑(1303) · 宁宜船头石碑(1467)。"},
+      {"ic":"📜","zh":"《马六甲法典》=行政/刑事/交易/家庭；《马六甲海事法典》=海事。"},
+      {"ic":"☪️","zh":"伊斯兰教是我国「联邦宗教」；英殖民时期伊斯兰法只限家庭、遗产、天课。"},
+      {"ic":"🌍","zh":"宗教普世价值：包容 · 仁爱 · 中庸。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"h621","q":"葡萄牙人、荷兰人和英国人统治马来半岛后，引入了哪个宗教？","o":["基督教","佛教","兴都教","伊斯兰教"],"a":0,"e":{"zh":"西方殖民者引入基督教。"}},
+      {"kind":"mcq","id":"h622","q":"伊斯兰教传入马六甲王朝的主因是？（选正确组合）","o":["马六甲苏丹信奉 + 穆斯林学者传教","公主远嫁中国","西方航海家在港口传教","马六甲沦为殖民地"],"a":0,"e":{"zh":"苏丹信奉伊斯兰教、穆斯林学者与商人传教，使其广传。"}},
+      {"kind":"mcq","id":"h623","q":"《马六甲法典》的内容与什么有关？","o":["行政、刑事、交易与家庭","只与海上贸易","只与宗教祭祀","只与军事作战"],"a":0,"e":{"zh":"《马六甲法典》是马六甲王朝行政依据，涉刑事、交易、家庭。"}},
+      {"kind":"mcq","id":"h624","q":"在英殖民时代，伊斯兰法只限于哪些事项实施？","o":["家庭、遗产与天课","刑事与军事","贸易与外交","教育与税收"],"a":0,"e":{"zh":"英殖民时期伊斯兰法仅限家庭、遗产、天课（zakat）。"}},
+      {"kind":"mcq","id":"h625","q":"我国的联邦宗教是什么宗教？","o":["伊斯兰教","锡克教","基督教","兴都教"],"a":0,"e":{"zh":"伊斯兰教是联邦宗教，但人民可自由信奉其他宗教。"}},
+      {"kind":"mcq","id":"h626","q":"下列哪项是伊斯兰教的教义？","o":["履行五功与六信","相信祖灵","相信轮回","遵行八正道"],"a":0,"e":{"zh":"伊斯兰教：五功与六信；八正道是佛教。"}},
+      {"kind":"mcq","id":"h627","q":"「言行举止保持温和，不表现激烈」体现哪项宗教普世价值？","o":["中庸","包容","仁爱","竞争"],"a":0,"e":{"zh":"温和不激烈 = 中庸。"}},
+      {"kind":"mcq","id":"h628","q":"判断：联邦宪法把伊斯兰教、佛教、兴都教和基督教并列为我国联邦宗教。","o":["错误","正确"],"a":0,"e":{"zh":"错。只有伊斯兰教是联邦宗教；人民仍可自由信奉其他宗教。"}}
+     ]
+   },
+   { "type":"grammar","boss":true,"t":{"zh":"马来语是我们的遗产（Boss）"},"draw":5,
+     "recap":[
+      {"ic":"🌱","zh":"系谱：马来语源自「南方语门(Filum Austrik)」→ 南岛语系(Austronesia)。"},
+      {"ic":"🗣️","zh":"马来语是通用语(lingua franca)，印尼、汶莱、新加坡等地广泛使用。"},
+      {"ic":"📥","zh":"外来词丰富：如「putera」源自梵语。"},
+      {"ic":"🧩","zh":"功用：官方·团结·沟通·文学·行政·教育·商业·法律语言。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"h631","q":"关于马来语系谱，下列哪项说明是正确的？","o":["马来语源自南方语门(Filum Austrik)","马来语源于亚非语系","马来语源于汉藏语系","马来语是西方国家方言"],"a":0,"e":{"zh":"马来语源自南方语门 → 南岛语系。"}},
+      {"kind":"mcq","id":"h632","q":"下列哪个是使用马来语的区域？","o":["印度尼西亚","巴西","意大利","乌拉圭"],"a":0,"e":{"zh":"印尼等东南亚地区广泛使用马来语。"}},
+      {"kind":"mcq","id":"h633","q":"马来语中的「putera」源自哪个外语？","o":["梵语","华语","荷兰语","淡米尔语"],"a":0,"e":{"zh":"putera 源自梵语(Sanskrit)。"}},
+      {"kind":"mcq","id":"h634","q":"现今，马来语如何作为我国的教育语言？","o":["作为学校和高等学府的教学媒介语","教授外国人宗教知识","作为传承民间故事的媒介","作为大学生之间私下沟通语言"],"a":0,"e":{"zh":"马来语是学校与高等学府的教学媒介语。"}},
+      {"kind":"mcq","id":"h635","q":"为什么我们要了解马来语的系谱？","o":["领悟马来语是国家遗产，应引以为荣","马来语历史尚短，需努力维持","马来语文化比其他语言更胜一筹","马来语自古是贵族语言，需尊崇"],"a":0,"e":{"zh":"了解系谱 → 珍惜马来语这项国家遗产。"}},
+      {"kind":"mcq","id":"h636","q":"身为国民，如何发挥马来语作为「团结语言」的功用？","o":["参加生活营时，以马来语与友族交流","只在家里以马来语与长辈闲聊","以马来语向外国游客介绍景点","在朋友面前演唱马来歌曲"],"a":0,"e":{"zh":"与友族用马来语交流，体现团结功能。"}}
+     ]
+   }
+  ]
+ },
+ {
+  "id":"t7",
+  "title":{"zh":"主题七 · 外来势力与国家独立"},
+  "lessons":[
+   { "type":"grammar","t":{"zh":"外来势力与殖民"},"draw":6,
+     "recap":[
+      {"ic":"🌸","zh":"藩属国向暹罗进献「金银花」以获得安全保障。"},
+      {"ic":"🇵🇹","zh":"1511 葡萄牙占领马六甲（第一个西方殖民者）。"},
+      {"ic":"🇬🇧","zh":"英国：1786槟城 · 1824《英荷条约》取马六甲 · 1826海峡殖民地 · 1874干预霹雳（首个被干政州）。"},
+      {"ic":"🤍","zh":"詹姆斯·布洛克「白人拉惹」1841统治砂拉越；北婆罗洲公司1881统治沙巴。"},
+      {"ic":"💎","zh":"殖民主因：丰富天然资源 + 优越地理位置。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"h711","q":"为什么藩属国每三年必须进献金银花给暹罗统治者？","o":["获得安全保障","获得结盟机会","获得额外奖赏","获得经济利益"],"a":0,"e":{"zh":"进献金银花(bunga emas)以换取暹罗的保护。"}},
+      {"kind":"mcq","id":"h712","q":"哪个外来势力于1511年占领马六甲？","o":["葡萄牙","荷兰","英国","日本"],"a":0,"e":{"zh":"1511年葡萄牙占领马六甲（首个西方殖民者）。"}},
+      {"kind":"mcq","id":"h713","q":"吸引外来势力干政和殖民我国的主要因素是？","o":["我国拥有丰富的天然资源","我国拥有广阔无疆的土地","我国允许多元宗教发展","各州苏丹具备优秀领袖才能"],"a":0,"e":{"zh":"丰富天然资源是主因（另：优越地理位置）。"}},
+      {"kind":"mcq","id":"h714","q":"詹姆斯·布洛克自封什么称号统治砂拉越？","o":["白人拉惹","总督","参政司","顾问官"],"a":0,"e":{"zh":"James Brooke 自封「白人拉惹」，1841年统治砂拉越。"}},
+      {"kind":"mcq","id":"h715","q":"英国北婆罗洲公司于哪一年正式统治沙巴？","o":["1881年","1786年","1824年","1841年"],"a":0,"e":{"zh":"取得皇家宪章后，1881年正式统治沙巴。"}},
+      {"kind":"mcq","id":"h716","q":"下列哪个是英国人在我国交通系统的发展？","o":["兴建铁路和公路","建立飞机场","兴建轻快铁","建立海底隧道"],"a":0,"e":{"zh":"英国人兴建铁路和公路，便于运输资源。"}},
+      {"kind":"mcq","id":"h717","q":"我国第一个被英国「干政」的州属是？","o":["霹雳","彭亨","沙巴","槟城"],"a":0,"e":{"zh":"1874年英国干预霹雳内政（参政司制度）。"}},
+      {"kind":"mcq","id":"h718","q":"海峡殖民地由哪三个地方组成？","o":["槟城、马六甲、新加坡","槟城、霹雳、雪兰莪","马六甲、彭亨、柔佛","沙巴、砂拉越、纳闽"],"a":0,"e":{"zh":"1826年槟城+马六甲+新加坡组成海峡殖民地，由总督管理。"}}
+     ]
+   },
+   { "type":"grammar","t":{"zh":"地方英雄"},"draw":5,
+     "recap":[
+      {"ic":"🦸","zh":"记人物：拿督马哈拉惹里拉(霹雳)·拿督巴哈曼(彭亨)·多赛益(南宁)·末沙烈(沙巴)。"},
+      {"ic":"⚔️","zh":"抗英主因：英国干预马来风俗 + 推行新政策/新税。"},
+      {"ic":"⚖️","zh":"哈芝阿都拉曼林梦：律师为农民辩护 → 见不公，挺身捍卫正义。"},
+      {"ic":"🏛️","zh":"珍惜方式：设纪念馆/纪念碑、把事迹编入教科书。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"h721","q":"拿督马哈拉惹里拉是哪个州属的地方英雄？","o":["霹雳","彭亨","沙巴","砂拉越"],"a":0,"e":{"zh":"拿督马哈拉惹里拉是霹雳的地方英雄。"}},
+      {"kind":"mcq","id":"h722","q":"拿督巴哈曼是哪个州属的地方英雄？","o":["彭亨","霹雳","森美兰","吉兰丹"],"a":0,"e":{"zh":"拿督巴哈曼是彭亨的地方英雄。"}},
+      {"kind":"mcq","id":"h723","q":"地方英雄抗英的原因是？（选正确组合）","o":["英国干预马来风俗 + 反对英国推行的新政策","出让自己国家的主权","英国强迫信基督教 + 出让主权","欢迎英国前来统治"],"a":0,"e":{"zh":"抗英主因：英国干预马来风俗、推行新政策。"}},
+      {"kind":"mcq","id":"h724","q":"袭击冰厢岸英国北婆罗洲公司、并在士兰吉河建立堡垒的地方英雄是？","o":["末沙烈","安德农","督江谷","严端安达"],"a":0,"e":{"zh":"末沙烈(Mat Salleh)在沙巴抗英。"}},
+      {"kind":"mcq","id":"h725","q":"哈芝阿都拉曼林梦身为律师为农民辩护，我们从他身上学到？","o":["遇到不公，挺身而出，捍卫正义","保持中立，明哲保身","靠拢势力较大的一方","默不作声，以免惹祸"],"a":0,"e":{"zh":"见义勇为、捍卫正义。"}},
+      {"kind":"mcq","id":"h726","q":"下列哪项是珍惜地方英雄抗争历史的做法？（选正确组合）","o":["设立纪念馆/纪念碑 + 把事迹编入教科书","给后代敕封爵位 + 人民畏惧英雄","随意更改历史记载","遗忘他们的事迹"],"a":0,"e":{"zh":"建纪念馆/碑、编入教科书，铭记英雄。"}}
+     ]
+   },
+   { "type":"grammar","boss":true,"t":{"zh":"国家独立（Boss）"},"draw":5,
+     "recap":[
+      {"ic":"🚨","zh":"1948 因共产党武装威胁，宣布进入「紧急状态」。"},
+      {"ic":"🔄","zh":"「马来亚联邦(Malayan Union)」被撤 → 改「马来亚联合邦」(1948)。"},
+      {"ic":"🏴","zh":"1956 伦敦谈判（东姑阿都拉曼带队）→《伦敦条约》。"},
+      {"ic":"🎉","zh":"1957.8.31 默迪卡体育场，东姑高喊七次「Merdeka」宣布独立。"},
+      {"ic":"🤝","zh":"成功主因：国家领袖睿智 + 协商精神。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"h731","q":"领导泛马回教党、提倡「大马来由」政治概念的独立斗士是？","o":["布哈努丁赫尔米医生","依萨莫哈末","阿末波斯达曼","拿督哈芝阿都华合"],"a":0,"e":{"zh":"布哈努丁赫尔米医生(Dr Burhanuddin Al-Helmy)领导泛马回教党。"}},
+      {"kind":"mcq","id":"h732","q":"「马来亚联邦计划(Malayan Union)」被撤销后，英国政府以什么计划取代？","o":["马来亚联合邦计划","马来亚联盟计划","马来西亚联盟计划","马来西亚联合邦计划"],"a":0,"e":{"zh":"Malayan Union → 马来亚联合邦(1948)。"}},
+      {"kind":"mcq","id":"h733","q":"我国为何于1948年宣布进入紧急状态？","o":["受到共产党威胁","苏丹诞辰","国家元首驾崩","发生大规模瘟疫"],"a":0,"e":{"zh":"因共产党武装威胁而宣布紧急状态。"}},
+      {"kind":"mcq","id":"h734","q":"我国能够成功争取国家独立的主要因素是？","o":["国家领袖睿智并具有协商精神","人民努力为英国政府效力","国家领袖通过极端手法获取独立","人民能够掌握国家原则内容"],"a":0,"e":{"zh":"领袖睿智 + 协商精神是成功关键。"}},
+      {"kind":"mcq","id":"h735","q":"1957年8月31日，东姑阿都拉曼在哪里带领民众高喊七次「Merdeka」宣布独立？","o":["默迪卡体育场","马六甲怡力操场","雪兰莪俱乐部操场","武吉加里尔国家体育场"],"a":0,"e":{"zh":"默迪卡体育场(Stadium Merdeka)，高喊七次 Merdeka。"}},
+      {"kind":"mcq","id":"h736","q":"各族领袖组成独立代表团，前往伦敦与英国谈判争取独立，体现什么精神？","o":["协商精神","体育精神","革新精神","创业精神"],"a":0,"e":{"zh":"协商精神是争取独立的关键。"}}
+     ]
+   }
+  ]
+ }
+];
+
+/* fill ms/en from zh so nothing renders blank under other UI languages */
+(function(){
+ function zf(o){ if(o && o.zh){ if(!o.ms)o.ms=o.zh; if(!o.en)o.en=o.zh; } }
+ SUBJECT_COURSES.sej.forEach(m=>{ zf(m.title); m.lessons.forEach(l=>{ zf(l.t); (l.recap||[]).forEach(zf); (l.items||[]).forEach(it=>{ zf(it.e); }); }); });
+})();
+
+/* ============================================================
+   SUBJECT: 科学 Sains (5C) — Theme 1 科学探究 / 科学技能
+   Image-bound items rephrased as equivalent concept MCQs.
+   Authored zh-only for t/e/recap; ms/en auto-filled.
+   ============================================================ */
+SUBJECT_COURSES.sci = [
+ {
+  "id":"sci1",
+  "title":{"zh":"科学技能（一）"},
+  "lessons":[
+   { "type":"grammar","t":{"zh":"观察与分类"},"draw":4,
+     "recap":[
+      {"ic":"🔬","zh":"观察=用感官收集资料；分类=按共同特征归类。"},
+      {"ic":"🫁","zh":"呼吸器官速记：昆虫=气孔 · 鱼=鳃 · 哺乳类/鸟=肺。"},
+      {"ic":"🔌","zh":"材料分类：能导电=电导体；不能导电=电的绝缘体。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"s101","q":"昆虫（如蟑螂、蚱蜢）用什么器官呼吸？","o":["气孔","鳃","肺","皮肤"],"a":0,"e":{"zh":"昆虫用气孔（气管）呼吸。"}},
+      {"kind":"mcq","id":"s102","q":"鱼类（如鲤鱼、鲨鱼）用什么器官呼吸？","o":["鳃","气孔","肺","皮肤"],"a":0,"e":{"zh":"鱼用鳃呼吸。"}},
+      {"kind":"mcq","id":"s103","q":"哺乳类（如兔子、狮子、老鼠）用什么器官呼吸？","o":["肺","鳃","气孔","皮肤"],"a":0,"e":{"zh":"哺乳类用肺呼吸。"}},
+      {"kind":"mcq","id":"s104","q":"把材料分成「电导体」和「电的绝缘体」，运用了哪项科学技能？","o":["分类","预测","假设","沟通"],"a":0,"e":{"zh":"按特征归类 = 分类(classification)。"}},
+      {"kind":"mcq","id":"s105","q":"下列哪种动物和「兔子」用相同的器官呼吸？","o":["狮子","蟑螂","鲤鱼","蚱蜢"],"a":0,"e":{"zh":"兔子和狮子都是哺乳类，用肺呼吸。"}}
+     ]
+   },
+   { "type":"grammar","t":{"zh":"测量与工具"},"draw":4,
+     "recap":[
+      {"ic":"⚖️","zh":"质量→天平 · 时间→秒表 · 长度→卷尺 · 液体体积→量筒。"},
+      {"ic":"💡","zh":"灯泡会亮=电导体；灯泡不亮=电的绝缘体。"},
+      {"ic":"📐","zh":"测量与应用数目：选对工具、读对数值很关键。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"s111","q":"测量物体「质量」的工具是？","o":["天平","秒表","卷尺","温度计"],"a":0,"e":{"zh":"质量用天平测量。"}},
+      {"kind":"mcq","id":"s112","q":"测量「时间」的工具是？","o":["秒表","天平","卷尺","量筒"],"a":0,"e":{"zh":"时间用秒表测量。"}},
+      {"kind":"mcq","id":"s113","q":"测量物体「长度」的工具是？","o":["卷尺","天平","秒表","量筒"],"a":0,"e":{"zh":"长度用卷尺/直尺测量。"}},
+      {"kind":"mcq","id":"s114","q":"测量「液体体积」的工具是？","o":["量筒","天平","秒表","卷尺"],"a":0,"e":{"zh":"液体体积用量筒测量。"}},
+      {"kind":"mcq","id":"s115","q":"在电路中，灯泡「会发亮」表示该材料是？","o":["电导体","电的绝缘体","磁铁","酸性物质"],"a":0,"e":{"zh":"能导电→灯亮→电导体。"}},
+      {"kind":"mcq","id":"s116","q":"在电路中，灯泡「不会发亮」表示该材料是？","o":["电的绝缘体","电导体","磁铁","碱性物质"],"a":0,"e":{"zh":"不导电→灯不亮→绝缘体。"}}
+     ]
+   },
+   { "type":"grammar","boss":true,"t":{"zh":"酸碱与推断（Boss）"},"draw":4,
+     "recap":[
+      {"ic":"🔴","zh":"蓝色石蕊试纸遇「酸」变红。"},
+      {"ic":"🔵","zh":"红色石蕊试纸遇「碱」变蓝。"},
+      {"ic":"🧠","zh":"推断 = 根据观察到的结果，作出合理的解释。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"s121","q":"蓝色石蕊试纸遇到酸性物质会变成什么颜色？","o":["红色","蓝色","紫色","绿色"],"a":0,"e":{"zh":"蓝色石蕊遇酸变红。"}},
+      {"kind":"mcq","id":"s122","q":"红色石蕊试纸遇到碱性物质会变成什么颜色？","o":["蓝色","红色","黄色","黑色"],"a":0,"e":{"zh":"红色石蕊遇碱变蓝。"}},
+      {"kind":"mcq","id":"s123","q":"物质X使蓝色石蕊试纸变红，X最可能是？","o":["酸性物质","碱性物质","中性物质","气体"],"a":0,"e":{"zh":"使蓝色石蕊变红 → X是酸性。"}},
+      {"kind":"mcq","id":"s124","q":"物质Y使红色石蕊试纸变蓝，Y最可能是？","o":["碱性物质","酸性物质","中性物质","金属"],"a":0,"e":{"zh":"使红色石蕊变蓝 → Y是碱性。"}},
+      {"kind":"mcq","id":"s125","q":"根据观察到的结果作出合理的解释，运用了哪项科学技能？","o":["推断","观察","测量","沟通"],"a":0,"e":{"zh":"根据观察作出解释 = 推断(inference)。"}}
+     ]
+   }
+  ]
+ },
+ {
+  "id":"sci2",
+  "title":{"zh":"科学技能（二）"},
+  "lessons":[
+   { "type":"grammar","t":{"zh":"预测"},"draw":4,
+     "recap":[
+      {"ic":"💨","zh":"水会蒸发 → 放在室内的水，体积会一天天变少。"},
+      {"ic":"🛢️","zh":"油比水轻 → 浮在水面；玻璃比水重 → 沉入水底。"},
+      {"ic":"🔮","zh":"预测 = 根据已知资料，推测将会发生的结果。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"s201","q":"一杯水放在室内，体积一天比一天少。第4天水的体积最可能是？","o":["比第3天的少","比第1天的多","比第3天的多","与第2天的相同"],"a":0,"e":{"zh":"水会蒸发，体积持续减少 → 第4天比第3天更少。"}},
+      {"kind":"mcq","id":"s202","q":"把食油倒入水中并静置后，食油会？","o":["浮在水面","沉入水底","完全溶解","变成气体"],"a":0,"e":{"zh":"食油密度比水小 → 浮在水面。"}},
+      {"kind":"mcq","id":"s203","q":"把玻璃弹子放入水中，弹子会？","o":["沉入水底","浮在水面","溶解","蒸发"],"a":0,"e":{"zh":"玻璃密度比水大 → 沉入水底。"}},
+      {"kind":"mcq","id":"s204","q":"根据已知资料推测「将会发生」的结果，这是哪项科学技能？","o":["预测","分类","测量","假设"],"a":0,"e":{"zh":"推测将发生的事 = 预测(prediction)。"}}
+     ]
+   },
+   { "type":"grammar","t":{"zh":"诠释资料"},"draw":4,
+     "recap":[
+      {"ic":"🏃","zh":"活动越剧烈 → 呼吸率越高。"},
+      {"ic":"🍬","zh":"表面积越大（粉状）→ 溶解越快；方块状最慢。"},
+      {"ic":"📊","zh":"诠释资料 = 读懂图表/表格里的数据并加以解释。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"s211","q":"一个人活动越剧烈，他的呼吸率会？","o":["越高","越低","不变","先高后低"],"a":0,"e":{"zh":"活动越剧烈，身体需氧越多 → 呼吸率越高。"}},
+      {"kind":"mcq","id":"s212","q":"相同的方糖，哪种状态在温水里溶解得最快？","o":["粉状","颗粒状","方块状","三者一样快"],"a":0,"e":{"zh":"粉状表面积最大 → 溶解最快。"}},
+      {"kind":"mcq","id":"s213","q":"相同的方糖，哪种状态溶解得最慢？","o":["方块状","粉状","颗粒状","三者一样"],"a":0,"e":{"zh":"方块状表面积最小 → 溶解最慢。"}},
+      {"kind":"mcq","id":"s214","q":"从图表或表格中读出数据并加以解释，这是哪项科学技能？","o":["诠释资料","观察","假设","控制变数"],"a":0,"e":{"zh":"读图表并解释 = 诠释资料(interpreting data)。"}}
+     ]
+   },
+   { "type":"grammar","boss":true,"t":{"zh":"变数与公平实验（Boss）"},"draw":5,
+     "recap":[
+      {"ic":"🎛️","zh":"操纵变数=我「改变」的；反应变数=我「观察/测量」的；固定变数=「保持不变」的。"},
+      {"ic":"🧪","zh":"公平实验：只能有「一个」操纵性变数，其余都要保持不变。"},
+      {"ic":"💭","zh":"假设写成「越…越…」的因果，例如：甘油越多，泡泡越持久。"}
+     ],
+     "items":[
+      {"kind":"mcq","id":"s221","q":"实验中「被我们改变」的变数，叫做？","o":["操纵性变数","反应性变数","固定性变数","中性变数"],"a":0,"e":{"zh":"被改变的 = 操纵性变数(manipulated variable)。"}},
+      {"kind":"mcq","id":"s222","q":"实验中「被观察或测量出来的结果」，叫做？","o":["反应性变数","操纵性变数","固定性变数","随机变数"],"a":0,"e":{"zh":"被观察/测量的结果 = 反应性变数(responding variable)。"}},
+      {"kind":"mcq","id":"s223","q":"实验中「保持不变」的变数，叫做？","o":["固定性变数","操纵性变数","反应性变数","自由变数"],"a":0,"e":{"zh":"保持不变的 = 固定性变数(constant variable)。"}},
+      {"kind":"mcq","id":"s224","q":"研究「甘油越多，泡泡越持久」时，可以作出什么假设？","o":["甘油越多，泡泡保持不破的时间越长","甘油越多，泡泡越容易破","甘油的分量不影响泡泡","泡泡大小与甘油无关"],"a":0,"e":{"zh":"假设(hypothesis)写成「越…越…」的因果关系。"}},
+      {"kind":"mcq","id":"s225","q":"一项「公平实验」应该只有几个操纵性变数？","o":["一个","两个","三个","越多越好"],"a":0,"e":{"zh":"公平实验只能有一个操纵性变数，其余保持不变。"}},
+      {"kind":"mcq","id":"s226","q":"在「糖溶解快慢」的实验中，操纵性变数是？","o":["糖的状态（粉状/颗粒/方块）","水的体积","水的温度","搅拌的时间"],"a":0,"e":{"zh":"被改变的是糖的状态 → 操纵性变数；水量、水温、搅拌时间要保持不变。"}}
+     ]
+   }
+  ]
+ }
+];
+
+/* fill ms/en from zh so nothing renders blank under other UI languages */
+(function(){
+ function zf(o){ if(o && o.zh){ if(!o.ms)o.ms=o.zh; if(!o.en)o.en=o.zh; } }
+ SUBJECT_COURSES.sci.forEach(m=>{ zf(m.title); m.lessons.forEach(l=>{ zf(l.t); (l.recap||[]).forEach(zf); (l.items||[]).forEach(it=>{ zf(it.e); }); }); });
+})();
+
 /* ---------- UI strings ---------- */
 const UI = {
  zh:{bmTitle:"Mini Build Mission",bmSub:"本课收官任务：连说 3–5 句关于你自己的话。不评分、不上传、没有标准答案——开口表达就是目标。",bmHint:"上面只是示范。请换成你自己的真实资料来说。",gfTitle:"推荐学习路径",gfSub:"系统建议按这个顺序学习本模块：",gfFree:"你也可以现在就探索这一关——学习的自由在你手上。",gfBack:"返回",gfBossLocked:"👑 Boss 是阶段毕业战：完成本模块第 1–4 关后自动解锁。",continue:"Continue",check:"Check",start:"Start",resume:"Resume",startLesson:"Start Lesson",correct:"Correct!",wrong:"Not quite",answerIs:"Correct answer:",vocab:"Vocabulary",patterns:"Sentence Patterns",fill:"Fill in the Blank",sub:"Substitution",order:"Word Order",trans:"Translation",mcq:"Multiple Choice",dialog:"Dialogue",boss:"BOSS CHALLENGE",lessonDone:"Lesson Complete!",bossDone:"Boss Defeated!",resSub:"Lesson complete. Next lesson unlocked.",accuracy:"Accuracy",locked:"Locked",done:"Done",go:"In progress",new:"Start",lesson:"Lesson",lessonU:"",module:"Module",bonus:"Completion bonus",bossBonus:"Boss bonus",heroNew:"Start your English journey here.",heroCont:"Continue where you left off.",allDone:"Congratulations! You finished the whole Level 1! 🎉",step:"Step",sceneLbl:"Scene",you:"You",changeLang:"Change explanation language?",menuTitle:"Menu",cancel:"Close",saveLocal:"Save to Device",quitYes:"Quit",quitNo:"Keep Learning",soundOn:"🔊 Sound on",soundOff:"🔇 Sound off",reviewLbl:"Today's Review",reviewN:"{n} questions to review",reviewNow:"Review",allCaught:"All caught up 🎉",noReview:"No review needed right now.",reviewDone:"Review Complete!",clearedMsg:"{c} cleared · {r} still to review.",reviewAgain:"Keep Reviewing",mistakes:"Mistakes to Review",praise:["Correct!","Excellent!","Great job!","Perfect!","Keep it up!"],combo:"Combo",nextUp:"Next",backHome:"Home",dailyGoal:"Daily Goal",goalDone:"🎉 Daily goal reached!",courseProg:"Course Progress",streakMile:"🔥 {n} days in a row! Amazing!",navHome:"Map",navProfile:"Profile",achTitle:"Achievements",statLessons:"Lessons",statStreak:"Day Streak",student:"Murid",editName:"Edit name",saveName:"Save",cpSub:"Level 1 · Construct",startFlag:"START HERE",toNext:"{n} XP to Lv {lv}",listen:"Listening Match",meaningIs:"Meaning:",nlTag:"Next Level",nlLocked:"Locked · {n}/25 lessons",nlSoon:"Coming soon 🎉",obTitle:"Welcome! 👋",obSkip:"Skip",speakTitle:"Speak Up",record:"Record",stopBtn:"Stop",play:"Play",tryAgain:"Try Again",speakSay:"Say this sentence:",recState:"Recording…",getReady:"Get ready…",speakNow:"Speak now!",saving:"Saving…",vocabSub:"先认读这些单词，再继续。",tapSpk:"点喇叭按钮听单词发音；点选词块时也会自动朗读。",patternsSub:"___ 是可替换的位置。",fillSub:"选出正确的词。",subSub:"点选一个词，替换进句型。",subBuilt:"很好！你造了这个句子：",orderSub:"点击单词，排出正确顺序。",transSub:"把句子翻译成英文（点词组句）。",mcqSub:"选出最合适的答案。",dialogSub:"点词组句，完成你的台词。",bossSub:"无提示！靠自己完成对话。",reviewFrom:"来自你之前做错的题目，答对后会从这里移除。",quit:"退出本关？本关进度不会保存。",menuSub:"切换解释语言，或把进度保存到本设备（进度也会自动保存）。记住每道题的重点，考试时就更容易复盘。",saved:"✓ 已保存到本设备（刷新后会恢复）",savedMem:"已保存到本次会话（此浏览器不支持本地存储）",listenSub:"点喇叭听发音，再点对应的英文单词，把它们配对。",nlDesc:"Level 2 · Convey：学会清楚传达完整信息——讲述经历、说明原因、表达感受和计划，把句子连成自然的小段落。",nlToastLocked:"完成全部 25 关即可解锁 Level 2。继续加油！",nlToastSoon:"🎉 你已完成 Level 1！Level 2 (Convey) 正在制作中，敬请期待。",obSub:"我们要怎么称呼你？你的名字会出现在练习里（例如 My name is …），之后也可以在 Profile 里修改。",obHello:"你好，{name}！",listenMuted:"声音已关闭，本听力练习已跳过。想练听力可在右上角打开声音。",speakSub:"先开口说，再听听自己的声音；想重来就再录一次。不评分、不上传，录音只保存在你自己的设备里。",speakDenied:"无法使用麦克风（可能未授权）。没关系，点 Continue 继续，不影响通关。",speakSaved:"✓ 已录好，保存在本机。点 Play 听听自己的发音！",speakSavedHint:"找到你上次的录音了，点 Play 可以回听，或再录一次。",speakWaitHint:"按 Record 后先别说话——看到 “Speak now” 再开始说，录音会更完整。"},
@@ -1212,7 +1497,7 @@ const EXAM_UI = {
   reportBtn:"📋 Laporan Kemajuan Saya", reportTitle:"Laporan Kemajuan",
   repThisLesson:"Pencapaian kamu kali ini", repCorrect:"Jawapan betul", repAcc:"Ketepatan", repXPGain:"XP diperoleh", repWritingDone:"Cabaran penulisan selesai!",
   repLearned:"Apa yang kamu pelajari", repJourney:"Perjalanan kamu setakat ini", repLessons:"Pelajaran selesai", repTotalXP:"Jumlah XP", repStreakDays:"Hari berturut-turut", repClose:"Teruskan",
-  resetBtn:"🔄 Mula Semula", resetTitle:"Mula semula?", resetMsg:"Semua kemajuan (XP, lencana, pelajaran selesai dan kesalahan) akan dipadamkan. Nama dan bahasa kekal. Tindakan ini tidak boleh dibuat asal.", resetYes:"Ya, mula semula", resetNo:"Batal",
+  resetBtn:"🔄 Mula Semula", resetTitle:"Mula semula?", resetMsg:"Semua kemajuan (XP, lencana, pelajaran selesai dan kesalahan) akan dipadamkan. Nama dan bahasa kekal. Tindakan ini tidak boleh dibuat asal.", resetYes:"Ya, mula semula", resetNo:"Batal", subjectTitle:"Pilih subjek",
   repCheerHigh:"Hebat sungguh, {name}! Kamu semakin pandai!", repCheerMid:"Bagus, {name}! Setiap latihan buat kamu lebih hebat!", repCheerStart:"Syabas, {name}! Kamu sudah melangkah maju!", recapHi:"Hebat! Ingat poin ini, mesti boleh nanti!",
   cpSub:"UPSA · Tahun 5",
   passage:"Petikan", passageSub:"Baca petikan dengan teliti, kemudian jawab soalan.",
@@ -1233,7 +1518,7 @@ const EXAM_UI = {
   reportBtn:"📋 我的进步报告", reportTitle:"进步报告",
   repThisLesson:"这一关你的表现", repCorrect:"答对题数", repAcc:"正确率", repXPGain:"获得 XP", repWritingDone:"完成了写作挑战！",
   repLearned:"你学会了", repJourney:"你的学习旅程", repLessons:"已完成关卡", repTotalXP:"总 XP", repStreakDays:"连续学习天数", repClose:"继续",
-  resetBtn:"🔄 重新开始", resetTitle:"要重新开始吗？", resetMsg:"所有进度（XP、徽章、已完成关卡和错题）都会清空。名字和语言会保留。此操作无法撤销。", resetYes:"是的，全部重做", resetNo:"取消",
+  resetBtn:"🔄 重新开始", resetTitle:"要重新开始吗？", resetMsg:"所有进度（XP、徽章、已完成关卡和错题）都会清空。名字和语言会保留。此操作无法撤销。", resetYes:"是的，全部重做", resetNo:"取消", subjectTitle:"选择科目",
   repCheerHigh:"太厉害了，{name}！你越来越聪明了！", repCheerMid:"做得好，{name}！每次练习都让你更棒！", repCheerStart:"加油，{name}！你已经向前迈进了一步！", recapHi:"太棒了！记住这几点，下次准没错！",
   cpSub:"UPSA · 五年级",
   passage:"阅读篇章", passageSub:"仔细阅读以下篇章，然后作答。",
@@ -1254,7 +1539,7 @@ const EXAM_UI = {
   reportBtn:"📋 My Progress Report", reportTitle:"Progress Report",
   repThisLesson:"How you did this time", repCorrect:"Correct answers", repAcc:"Accuracy", repXPGain:"XP earned", repWritingDone:"Writing challenge done!",
   repLearned:"What you learned", repJourney:"Your journey so far", repLessons:"Lessons done", repTotalXP:"Total XP", repStreakDays:"Day streak", repClose:"Continue",
-  resetBtn:"🔄 Start Over", resetTitle:"Start over?", resetMsg:"All progress (XP, badges, completed lessons and mistakes) will be cleared. Name and language are kept. This cannot be undone.", resetYes:"Yes, start over", resetNo:"Cancel",
+  resetBtn:"🔄 Start Over", resetTitle:"Start over?", resetMsg:"All progress (XP, badges, completed lessons and mistakes) will be cleared. Name and language are kept. This cannot be undone.", resetYes:"Yes, start over", resetNo:"Cancel", subjectTitle:"Choose subject",
   repCheerHigh:"Amazing, {name}! You're getting smarter!", repCheerMid:"Well done, {name}! Every practice makes you stronger!", repCheerStart:"Great job, {name}! You've taken a step forward!", recapHi:"Awesome! Remember these and you've got it!",
   cpSub:"UPSA · Year 5",
   passage:"Passage", passageSub:"Read the passage carefully, then answer.",
@@ -1281,10 +1566,10 @@ const TREE_SVGS = [
  '<svg viewBox="0 0 78 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="39" cy="90" rx="21" ry="4.6" fill="rgba(27,36,51,.13)"/><g class="gtRoot"><g class="eS" style="--d:0s"><ellipse cx="39" cy="85.5" rx="13" ry="6.5" fill="#BD8E67"/><ellipse cx="35.5" cy="83.5" rx="5.5" ry="2.4" fill="rgba(255,255,255,.28)"/><ellipse cx="39" cy="88" rx="11" ry="3" fill="rgba(99,62,38,.22)"/></g><g class="eS" style="--d:0.2s"><ellipse cx="39" cy="85" rx="20" ry="7" fill="#8FD49B"/><ellipse cx="33" cy="82.6" rx="8" ry="2.6" fill="rgba(255,255,255,.30)"/><ellipse cx="39" cy="88.5" rx="17" ry="3.4" fill="rgba(43,108,80,.20)"/></g><g class="eP" style="--d:0.32s"><ellipse cx="20.5" cy="87" rx="2.6" ry="1.8" fill="#C9CFD8"/><ellipse cx="19.8" cy="86.4" rx="1.1" ry=".7" fill="rgba(255,255,255,.55)"/></g><g class="eP" style="--d:0.42s"><ellipse cx="58" cy="86.6" rx="2.2" ry="1.6" fill="#BFC6D1"/><ellipse cx="57.4" cy="86.1" rx=".9" ry=".6" fill="rgba(255,255,255,.55)"/></g><g class="pcG" style="--d:0.55s"><path d="M19 86.5q1.5-4 3-5.5M22 87q.5-3 2-4.5" stroke="#7CCB8B" stroke-width="2" stroke-linecap="round" fill="none"/></g><g class="pcG" style="--d:0.7s"><path d="M59 86q-1.5-4-3-5.5M56.5 86.5q-.5-3-2-4.5" stroke="#7CCB8B" stroke-width="2" stroke-linecap="round" fill="none"/></g><g class="m5b"><g class="m1r" style="--d:0.45s"><g class="m2t" style="--d:0.0s"><path d="M39 83q-2.4-17 0-35" stroke="#A87B57" stroke-width="5" stroke-linecap="round" fill="none"/></g><g class="m2t" style="--d:0.6s"><path d="M39 83q-2.4-16 0-33" stroke="#9A6B49" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M37.6 79q-1.6-13 0-26" stroke="rgba(255,255,255,.18)" stroke-width="2" stroke-linecap="round" fill="none"/></g><g class="m3bl" style="--d:1.3s"><path d="M39 62q-8-2.5-11.5-8.5" stroke="#9A6B49" stroke-width="4" stroke-linecap="round" fill="none"/></g><g class="m3brr" style="--d:1.5s"><path d="M39 58q8-2.5 11.5-8.5" stroke="#9A6B49" stroke-width="3.8" stroke-linecap="round" fill="none"/></g><g class="m3bl" style="--d:1.7s"><path d="M39 53q-5-1.5-7.5-5.5" stroke="#9A6B49" stroke-width="3" stroke-linecap="round" fill="none"/></g><g class="m3brr" style="--d:1.9s"><path d="M39 50q5-1.5 7.5-5.5" stroke="#9A6B49" stroke-width="2.8" stroke-linecap="round" fill="none"/></g><g class="m3c" style="--d:2.15s"><circle cx="24" cy="44" r="14" fill="#58B26C"/></g><g class="m3c" style="--d:2.35s"><circle cx="54" cy="44" r="14" fill="#58B26C"/></g><g class="m3c" style="--d:2.6s"><circle cx="39" cy="30" r="17" fill="#58B26C"/></g><g class="m2u" style="--d:2.9s"><circle cx="32" cy="35" r="11.5" fill="#7CCB8B"/></g><g class="m2u" style="--d:3.1s"><circle cx="47" cy="37" r="10" fill="#7CCB8B"/><ellipse cx="29" cy="24" rx="7.5" ry="4.8" fill="rgba(255,255,255,.33)"/></g><g class="m1l" style="--d:3.32s"><ellipse cx="15" cy="48" rx="4.6" ry="3" fill="#7CCB8B" transform="rotate(-28 15 48)"/><ellipse cx="13.85" cy="46.95" rx="1.8399999999999999" ry="1.08" fill="rgba(255,255,255,.35)" transform="rotate(-28 15 48)"/></g><g class="m1rr" style="--d:3.46s"><ellipse cx="63" cy="48" rx="4.6" ry="3" fill="#7CCB8B" transform="rotate(26 63 48)"/><ellipse cx="61.85" cy="46.95" rx="1.8399999999999999" ry="1.08" fill="rgba(255,255,255,.35)" transform="rotate(26 63 48)"/></g><g class="m1l" style="--d:3.6s"><ellipse cx="39" cy="12.5" rx="4.2" ry="2.8" fill="#8FD49B" transform="rotate(-8 39 12.5)"/><ellipse cx="37.95" cy="11.52" rx="1.6800000000000002" ry="1.008" fill="rgba(255,255,255,.35)" transform="rotate(-8 39 12.5)"/></g><g class="m4f" style="--d:3.85s"><circle cx="38" cy="19.9" r="1.9" fill="#F2A0B5"/><circle cx="39.9" cy="18" r="1.9" fill="#F2A0B5"/><circle cx="38" cy="16.1" r="1.9" fill="#F2A0B5"/><circle cx="36.1" cy="18" r="1.9" fill="#F2A0B5"/><circle cx="38" cy="18" r="1.4249999999999998" fill="#FFE08A"/></g><g class="m4f" style="--d:4.05s"><circle cx="57" cy="34.9" r="1.9" fill="#F2A0B5"/><circle cx="58.9" cy="33" r="1.9" fill="#F2A0B5"/><circle cx="57" cy="31.1" r="1.9" fill="#F2A0B5"/><circle cx="55.1" cy="33" r="1.9" fill="#F2A0B5"/><circle cx="57" cy="33" r="1.4249999999999998" fill="#FFE08A"/></g><g class="m4f" style="--d:4.25s"><circle cx="21.5" cy="36.2" r="1.7" fill="#F6C66B"/><circle cx="23.2" cy="34.5" r="1.7" fill="#F6C66B"/><circle cx="21.5" cy="32.8" r="1.7" fill="#F6C66B"/><circle cx="19.8" cy="34.5" r="1.7" fill="#F6C66B"/><circle cx="21.5" cy="34.5" r="1.275" fill="#FFE08A"/></g><g class="m5r" style="--d:4.5s"><circle cx="26" cy="50" r="2.8" fill="#DE6A5E"/><circle cx="25.1" cy="49.1" r=".9" fill="rgba(255,255,255,.6)"/></g><g class="m5r" style="--d:4.65s"><circle cx="49" cy="52" r="2.6" fill="#F4A259"/><circle cx="48.2" cy="51.2" r=".8" fill="rgba(255,255,255,.6)"/></g><g class="m5r" style="--d:4.8s"><circle cx="39" cy="44" r="2.7" fill="#DE6A5E"/><circle cx="38.1" cy="43.2" r=".85" fill="rgba(255,255,255,.6)"/></g><g class="m5r" style="--d:4.95s"><circle cx="56.5" cy="42.5" r="2.6" fill="#F4A259"/><circle cx="55.7" cy="41.7" r=".8" fill="rgba(255,255,255,.6)"/></g></g></g><g class="eS" style="--d:0.05s"><ellipse cx="39" cy="85.2" rx="9.5" ry="3" fill="#BD8E67"/></g><g class="pcF" style="--d:5.15s"><path d="M15 88q-.5-3 0-5" stroke="#7CCB8B" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="15" cy="83.0" r="1.5" fill="#F2A0B5"/><circle cx="16.5" cy="81.5" r="1.5" fill="#F2A0B5"/><circle cx="15" cy="80.0" r="1.5" fill="#F2A0B5"/><circle cx="13.5" cy="81.5" r="1.5" fill="#F2A0B5"/><circle cx="15" cy="81.5" r="1.125" fill="#FFE08A"/></g><g class="pcF" style="--d:5.3s"><path d="M63 88q-.5-3 0-5" stroke="#7CCB8B" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="63" cy="82.5" r="1.5" fill="#F2A0B5"/><circle cx="64.5" cy="81" r="1.5" fill="#F2A0B5"/><circle cx="63" cy="79.5" r="1.5" fill="#F2A0B5"/><circle cx="61.5" cy="81" r="1.5" fill="#F2A0B5"/><circle cx="63" cy="81" r="1.125" fill="#FFE08A"/></g><g class="pcF" style="--d:5.45s"><path d="M54 88q-.5-3 0-5" stroke="#7CCB8B" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="54" cy="85.5" r="1.5" fill="#F2A0B5"/><circle cx="55.5" cy="84" r="1.5" fill="#F2A0B5"/><circle cx="54" cy="82.5" r="1.5" fill="#F2A0B5"/><circle cx="52.5" cy="84" r="1.5" fill="#F2A0B5"/><circle cx="54" cy="84" r="1.125" fill="#FFE08A"/></g><g class="pcF" style="--d:5.6s"><path d="M27 88q-.5-3 0-5" stroke="#7CCB8B" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="27" cy="87.0" r="1.5" fill="#F2A0B5"/><circle cx="28.5" cy="85.5" r="1.5" fill="#F2A0B5"/><circle cx="27" cy="84.0" r="1.5" fill="#F2A0B5"/><circle cx="25.5" cy="85.5" r="1.5" fill="#F2A0B5"/><circle cx="27" cy="85.5" r="1.125" fill="#FFE08A"/></g><g class="m5bd" style="--d:5.55s"><ellipse cx="22" cy="25.5" rx="4" ry="3.2" fill="#8FBFE8"/><circle cx="18.6" cy="23.1" r="2.5" fill="#8FBFE8"/><ellipse cx="22.8" cy="26.3" rx="2.1" ry="1.5" fill="rgba(255,255,255,.55)"/><path d="M16.3 23.1l-2.3 .8 2.3 .8z" fill="#F4A259"/><circle cx="18" cy="22.5" r=".7" fill="#243149"/><ellipse cx="23.4" cy="24.1" rx="2.5" ry="1.5" fill="#6FA8DC" transform="rotate(18 23.4 24.1)"/></g><g class="m5y" style="--d:6.05s"><ellipse cx="58.9" cy="28.6" rx="2.6" ry="1.8" fill="#C9A6E8" transform="rotate(-30 58.9 28.6)"/><ellipse cx="62.0" cy="30.2" rx="2.6" ry="1.8" fill="#D9BCF0" transform="rotate(28 62.0 30.2)"/><path d="M60.0 28.0l1 2.8" stroke="#7A5C9E" stroke-width="1" stroke-linecap="round"/></g><g class="m5s" style="--d:6.6s"><circle cx="12" cy="22" r="1.2" fill="#FFE08A"/><circle cx="65" cy="14" r="1.4" fill="#FFE08A"/><circle cx="68" cy="52" r="1" fill="#FFE08A"/><circle cx="10" cy="44" r=".9" fill="#FFE08A"/><circle cx="50" cy="9" r="1" fill="#FFE08A"/></g></g></svg>'
 ];
 /* lesson character is now an image: assets/characters/fergus.png */
-function mascotBubble(html){
+function mascotBubble(html,img){
  return `<div class="qrow"><span class="mascot"><span class="coach-wrap"><img
   class="coach"
-  src="assets/characters/fergus.png"
+  src="assets/characters/${img||'fergus.png'}"
   alt="Maskot pembimbing"
   loading="lazy"
   decoding="async"
@@ -1389,25 +1674,26 @@ const store = {
 };
 
 /* ---------- state ---------- */
+SUBJECT = store.get("te1_subject")||"bm"; if(!subjectReady(SUBJECT)) SUBJECT="bm"; loadSubject(SUBJECT);
 let S = {
  name: store.get("te1_name")||"",
  sound: store.get("te1_sound")!=="0",
  lang: store.get("te1_lang"),
- xp: parseInt(store.get("te1_xp")||"0",10),
- done: JSON.parse(store.get("te1_done")||"{}"),   // {"m1-0":true,...}
- review: JSON.parse(store.get("te1_review")||"[]"), // [{m,l,k,n},...] wrong answers to redo
- day: JSON.parse(store.get("te1_day")||'{"d":"","xp":0}'),  // today's XP toward the daily goal
- streak: JSON.parse(store.get("te1_streak")||'{"count":0,"last":""}')
+ xp: parseInt(store.get(pkey("xp"))||"0",10),
+ done: JSON.parse(store.get(pkey("done"))||"{}"),   // {"m1-0":true,...}
+ review: JSON.parse(store.get(pkey("review"))||"[]"), // [{m,l,k,n},...] wrong answers to redo
+ day: JSON.parse(store.get(pkey("day"))||'{"d":"","xp":0}'),  // today's XP toward the daily goal
+ streak: JSON.parse(store.get(pkey("streak"))||'{"count":0,"last":""}')
 };
 function save(){
  store.set("te1_lang", S.lang||"");
  store.set("te1_sound", S.sound?"1":"0");
  store.set("te1_name", S.name||"");
- store.set("te1_xp", String(S.xp));
- store.set("te1_done", JSON.stringify(S.done));
- store.set("te1_review", JSON.stringify(S.review));
- store.set("te1_day", JSON.stringify(S.day));
- store.set("te1_streak", JSON.stringify(S.streak));
+ store.set(pkey("xp"), String(S.xp));
+ store.set(pkey("done"), JSON.stringify(S.done));
+ store.set(pkey("review"), JSON.stringify(S.review));
+ store.set(pkey("day"), JSON.stringify(S.day));
+ store.set(pkey("streak"), JSON.stringify(S.streak));
 }
 function T(){ return UI[S.lang||"en"]; }
 function tri(o){ return o ? (o[S.lang]||o.en||"") : ""; }
@@ -1604,6 +1890,7 @@ applySound();
 
 /* ---------- home ---------- */
 function renderHome(){
+ { const sm=subjectMeta(SUBJECT); const bt=$("brandtxt"); if(bt) bt.textContent=tri(sm.brand); const lg=document.querySelector(".topbar .logo"); if(lg) lg.textContent=sm.logo; const sb=$("subjswitch"); if(sb){ sb.textContent=sm.icon; sb.onclick=subjectSheet; } }
  $("topbar").classList.remove("hidden");
  refreshChips();
  const t = T();
@@ -1815,6 +2102,7 @@ function startLesson(mi,li){
   const learned = (d.recap||[]).map(p=>`<div class="rep-learn"><span>${esc(p.ic||"⭐")}</span><span>${esc(tri(p))}</span></div>`).join("");
   const html = `<div class="rep-card">
     <button class="rep-x" id="repx" aria-label="close">✕</button>
+    <img class="rep-coach" src="assets/characters/fergus_5.png" alt="" onerror="this.style.display='none'">
     <div class="rep-burst">🎉</div>
     <h2 class="rep-title">${esc(cheer)}</h2>
     <div class="rep-sub">${esc(d.setTitle||"")} · ${esc(d.lessonTitle||"")}</div>
@@ -1856,6 +2144,25 @@ function startLesson(mi,li){
   if(no) no.onclick = closeOvl;
   if(yes) yes.onclick = resetProgress;
  }
+ /* subject switcher: each subject is an independent "game" (own content + progress) */
+ function subjectSheet(){
+  const t = T();
+  const rows = SUBJECTS.map(s=>{
+   const active = s.id===SUBJECT, ready = subjectReady(s.id);
+   return `<button class="subj-row${active?' active':''}" data-sid="${esc(s.id)}"${ready?'':' disabled'}>`
+    + `<span class="subj-ic">${s.icon}</span><span class="subj-nm">${esc(tri(s.name))}</span>`
+    + (active ? `<span class="subj-tag">✓</span>` : (ready ? `` : `<span class="subj-soon">${esc(t.nlSoon)}</span>`))
+    + `</button>`;
+  }).join("");
+  const o = sheet(`<h3 class="subj-h">${esc(t.subjectTitle)}</h3><div class="subj-list">${rows}</div>`);
+  o.querySelectorAll(".subj-row[data-sid]").forEach(b=>{ if(!b.disabled) b.onclick=()=>switchSubject(b.dataset.sid); });
+ }
+ function switchSubject(id){
+  if(id===SUBJECT || !subjectReady(id)){ closeOvl(); return; }
+  if(typeof save==="function") save();
+  store.set("te1_subject", id);
+  location.reload();
+ }
  $("quitbtn").onclick = ()=>{ askConfirm(T().quit, T().quitYes, T().quitNo, ()=>{ P=null; hideFeedback(); killRec(); renderHome(); }); };
 
 function setProg(){
@@ -1888,6 +2195,7 @@ function showFeedback(ok, opts){
  const t = T();
  const fb = $("feedback");
  fb.className = ok ? "ok" : "no";
+ { const fc=$("fbcoach"); if(fc){ fc.style.display=""; fc.src="assets/characters/"+(ok?"fergus_3.png":"fergus_4.png"); } }
  const sc = document.querySelector(".stepcard");
  if(sc){ sc.classList.remove("ansok","ansno"); void sc.offsetWidth; sc.classList.add(ok ? "ansok" : "ansno"); }
  (function(){ const cw = document.querySelector(".coach-wrap"); if(cw){ cw.classList.remove("coach-happy","coach-thinking"); void cw.offsetWidth; cw.classList.add(ok ? "coach-happy" : "coach-thinking"); cw.addEventListener("animationend", function _e(){ cw.classList.remove("coach-happy","coach-thinking"); cw.removeEventListener("animationend", _e); }); } })();
@@ -1979,7 +2287,7 @@ function renderStep(){
  if(st.kind==="saq"){
   const it = st.it;
   const readBtn = st.passage ? `<button type="button" class="readback" id="rdback">\u{1F4D6} ${esc(t.readAgain)}</button>` : "";
-  const inner = readBtn + mascotBubble(esc(px(it.q)))
+  const inner = readBtn + mascotBubble(esc(px(it.q)), "fergus_1.png")
    + `<textarea class="examinput" id="saqin" rows="3" placeholder="${esc(t.typeHere)}"></textarea>`
    + `<div id="modelslot"></div>`;
   box.innerHTML = stepShell(stepNum+" · +5 XP", esc(t.saqT), t.saqSub, inner,
@@ -2019,7 +2327,7 @@ function renderStep(){
  }
  if(st.kind==="recap"){
   const pts = st.r;
-  const inner = mascotBubble(esc(t.recapHi))
+  const inner = mascotBubble(esc(t.recapHi), "fergus_2.png")
    + `<div class="recaplist">`
    + pts.map(p=>`<div class="recapitem"><span class="ric">${esc(p.ic||"\u2B50")}</span><span class="rtx">${esc(tri(p))}</span></div>`).join("")
    + `</div>`;

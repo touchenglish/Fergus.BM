@@ -677,6 +677,13 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
 .rep-prog-top{ display:flex; justify-content:space-between; font-size:13px; color:var(--ink); font-weight:700; margin-bottom:6px; }
 .rep-bar{ height:14px; background:var(--canvas); border:1px solid var(--line); border-radius:99px; overflow:hidden; }
 .rep-bar-fill{ height:100%; background:linear-gradient(90deg,#7FB3E8,var(--brand)); border-radius:99px; }
+
+/* ---- reset button + confirm ---- */
+#resetbtn{ color:var(--danger); border-color:color-mix(in srgb, var(--danger) 28%, var(--line)); }
+.rst-box{ text-align:center; }
+.rst-ic{ font-size:40px; line-height:1; margin-bottom:8px; }
+.rst-h{ font-size:18px; margin:0 0 8px; color:var(--ink); }
+.rst-p{ font-size:14px; line-height:1.6; color:var(--muted); margin:0 0 18px; }
 </style>
 </head>
 <body>
@@ -772,6 +779,7 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
   </div>
   <div class="achh" id="achtitle">Achievements</div>
   <div class="achgrid" id="achgrid"></div>
+  <button class="btn btn-ghost btn-block" id="resetbtn" style="margin-top:22px"></button>
  </div>
 
  <!-- RESULT -->
@@ -919,7 +927,7 @@ const COURSE = [
    "t":{"ms":"Penulisan (Cabaran Boss)","zh":"写作（Boss 挑战）","en":"Writing (Boss Challenge)"},
    "items":[
     {"kind":"write","id":"s1w1","words":30,
-     "prompt":{"ms":"Kamu ingin menyertai Program Gotong-royong membaiki jambatan yang rosak. Namun, pada hari yang sama kamu dijemput ke jamuan di rumah saudara. Apakah tindakan yang patut kamu lakukan? Berikan pendapat kamu.","zh":"你想参加合作社区活动去修补坏掉的桥，但同一天又被邀请去亲戚家赴宴。你该怎么做？写出你的意见。","en":"You want to join a gotong-royong to repair a broken bridge, but the same day you're invited to a relative's feast. What should you do? Give your opinion."},
+     "prompt":{"ms":"{NAME}, cuba fikirkan situasi ini. Kamu ingin menyertai Program Gotong-royong membaiki jambatan yang rosak. Namun, pada hari yang sama kamu dijemput ke jamuan di rumah saudara. Apakah tindakan yang patut kamu lakukan? Berikan pendapat kamu.","zh":"{NAME}，来想一想这个情况。你想参加合作社区活动去修补坏掉的桥，但同一天又被邀请去亲戚家赴宴。你该怎么做？写出你的意见。","en":"{NAME}, let's think about this. You want to join a gotong-royong to repair a broken bridge, but the same day you're invited to a relative's feast. What should you do? Give your opinion."},
      "model":{"ms":"Saya akan menyertai program gotong-royong kerana membantu penduduk membaiki jambatan lebih penting demi keselamatan ramai. Saya boleh menghadiri jamuan saudara pada masa yang lain.","zh":"我会先参加合作活动，因为帮村民修桥关系到大家的安全，更重要；亲戚的宴会可以改天再去。","en":"I would join the gotong-royong because repairing the bridge keeps everyone safe and matters more; I can visit my relative another time."},
      "e":{"ms":"Beri pendirian yang jelas + satu sebab. Hadkan kepada 30 patah perkataan.","zh":"给出明确立场 + 一个理由，控制在 30 字以内。","en":"State a clear stand + one reason. Keep within 30 words."}},
     {"kind":"write","id":"s1w2","words":50,
@@ -1026,7 +1034,7 @@ COURSE.forEach(m=>{ const r=RECAP[m.id]; if(r) m.lessons.forEach((l,i)=>{ if(r[i
       {"kind":"saq","id":"s2p4","q":"Mengapakah ibu Alia memilih barangan buatan Malaysia? (2 markah)","model":{"ms":"Ibu Alia memilih barangan buatan Malaysia kerana harganya murah dan berkualiti tinggi.","zh":"因为马来西亚制造的商品价格便宜、质量又好。","en":"Because Malaysian-made goods are cheap and high quality."},"e":{"ms":"Cari sebab dalam petikan: murah dan berkualiti tinggi.","zh":"从文中找原因：便宜又优质。","en":"Find the reason in the text: cheap and high quality."}}
      ]},
    { "type":"writing","boss":true,"t":{"ms":"Penulisan (Cabaran Boss)","zh":"写作（Boss 挑战）","en":"Writing (Boss Challenge)"},"items":[
-     {"kind":"write","id":"s2w1","words":30,"prompt":{"ms":"Ketika balik dari sekolah, Mei Lan ternampak seekor anak kucing yang kurus dan kelaparan di tepi longkang. Jika kamu ialah Mei Lan, apakah tindakan yang akan kamu lakukan?","zh":"Mei Lan 放学回家时，在沟边看到一只又瘦又饿的小猫。如果你是 Mei Lan，你会怎么做？","en":"On the way home, Mei Lan sees a thin, hungry kitten by the drain. If you were Mei Lan, what would you do?"},"model":{"ms":"Saya akan membawa anak kucing itu pulang, memberinya makanan dan minuman, lalu menjaganya dengan baik. Saya juga akan membawanya ke klinik haiwan jika sakit.","zh":"我会把小猫带回家，给它食物和水，好好照顾它；如果它生病，就带它去兽医诊所。","en":"I would take the kitten home, feed it, and care for it well; if it is sick I would bring it to the vet."},"e":{"ms":"Nyatakan tindakan + sikap penyayang. Hadkan 30 patah perkataan.","zh":"写出行动 + 爱心，控制在 30 字内。","en":"State your action + kindness; keep within 30 words."}},
+     {"kind":"write","id":"s2w1","words":30,"prompt":{"ms":"{NAME}, cuba fikirkan situasi ini. Ketika balik dari sekolah, Mei Lan ternampak seekor anak kucing yang kurus dan kelaparan di tepi longkang. Jika kamu ialah Mei Lan, apakah tindakan yang akan kamu lakukan?","zh":"{NAME}，来想一想这个情况。Mei Lan 放学回家时，在沟边看到一只又瘦又饿的小猫。如果你是 Mei Lan，你会怎么做？","en":"{NAME}, let's think about this. On the way home, Mei Lan sees a thin, hungry kitten by the drain. If you were Mei Lan, what would you do?"},"model":{"ms":"Saya akan membawa anak kucing itu pulang, memberinya makanan dan minuman, lalu menjaganya dengan baik. Saya juga akan membawanya ke klinik haiwan jika sakit.","zh":"我会把小猫带回家，给它食物和水，好好照顾它；如果它生病，就带它去兽医诊所。","en":"I would take the kitten home, feed it, and care for it well; if it is sick I would bring it to the vet."},"e":{"ms":"Nyatakan tindakan + sikap penyayang. Hadkan 30 patah perkataan.","zh":"写出行动 + 爱心，控制在 30 字内。","en":"State your action + kindness; keep within 30 words."}},
      {"kind":"write","id":"s2w2","words":50,"prompt":{"ms":"Tuliskan pendapat kamu tentang cara-cara menjaga kebersihan diri, dalam SATU perenggan.","zh":"用一段话写出你对如何保持个人卫生的看法。","en":"Write your opinion on how to keep good personal hygiene, in ONE paragraph."},"graphic":{"ms":"Bahan grafik: mandi · badan sentiasa bersih dan segar · menggosok gigi · mengelakkan masalah karies gigi.","zh":"图表提示：洗澡 · 身体常保清洁清爽 · 刷牙 · 避免蛀牙问题。","en":"Graphic cues: bathe · keep the body clean and fresh · brush teeth · avoid tooth decay."},"model":{"ms":"Terdapat banyak cara untuk menjaga kebersihan diri. Kita hendaklah mandi setiap hari supaya badan sentiasa bersih dan segar. Selain itu, kita perlu menggosok gigi dua kali sehari. Amalan ini dapat mengelakkan masalah karies gigi dan menjaga kesihatan kita.","zh":"保持个人卫生有很多方法。我们应每天洗澡，让身体常保清洁清爽。此外，每天刷牙两次。这些习惯能避免蛀牙、保护健康。","en":"There are many ways to keep clean. We should bathe daily so the body stays fresh. Besides, we must brush teeth twice a day. These habits prevent tooth decay and keep us healthy."},"e":{"ms":"Satu perenggan, ≤50 patah perkataan; guna 'Selain itu'.","zh":"一段，≤50 字；用 \"Selain itu\"。","en":"One paragraph, ≤50 words; use 'Selain itu'."}},
      {"kind":"write","id":"s2w3","words":80,"prompt":{"ms":"Berdasarkan tema 'Pengalaman Pergi ke Dusun', tulis sebuah karangan (cerita ATAU catatan).","zh":"以 \"果园之旅的经历\" 为主题，写一篇作文（记叙文或日记）。","en":"On the theme 'A Trip to the Orchard', write a composition (story OR diary)."},"model":{"ms":"Pada cuti sekolah, keluarga saya pergi ke dusun datuk di kampung. Kami berjalan kaki di celah-celah pokok buah-buahan. Datuk menunjukkan cara memetik durian dan rambutan yang masak. Saya cuba memetik buah rambutan dan berasa sangat seronok. Kami menikmati buah-buahan segar di bawah pokok yang rendang. Pengalaman itu amat bermakna kerana mengeratkan hubungan keluarga.","zh":"学校假期，我们全家去乡下爷爷的果园。我们在果树间漫步。爷爷示范怎样采摘成熟的榴梿和红毛丹。我试着摘红毛丹，觉得非常开心。我们在茂密的树下享用新鲜水果。这次经历很有意义，因为它增进了家人之间的感情。","en":"During the school holiday my family went to grandfather's orchard. We walked among the fruit trees. Grandfather showed us how to pick ripe durians and rambutans. I tried picking rambutans and felt very happy. We enjoyed fresh fruit under the shady trees. The trip was meaningful because it brought our family closer."},"e":{"ms":"50–80 patah perkataan: pembukaan → aktiviti → penutup (perasaan).","zh":"50–80 字：开头 → 活动 → 结尾（感受）。","en":"50–80 words: opening → activities → closing (feeling)."}}
    ]}
@@ -1070,7 +1078,7 @@ COURSE.forEach(m=>{ const r=RECAP[m.id]; if(r) m.lessons.forEach((l,i)=>{ if(r[i
       {"kind":"saq","id":"s3p4","q":"Adakah Chan Meng bersikap amanah semasa menjalankan tugas? Buktikan. (2 markah)","model":{"ms":"Ya. Chan Meng menulis nama murid yang datang lewat walaupun kawan baiknya sendiri (tidak pilih kasih).","zh":"是的。他记下迟到同学的名字，连自己的好朋友也不例外（不徇私）。","en":"Yes. He records the names of latecomers even his own best friend (no favouritism)."},"e":{"ms":"Beri bukti daripada petikan: tidak pilih kasih walaupun kawan baik.","zh":"从文中举证：不徇私，连好友也照记。","en":"Give evidence from the text: no favouritism even to a best friend."}}
      ]},
    { "type":"writing","boss":true,"t":{"ms":"Penulisan (Cabaran Boss)","zh":"写作（Boss 挑战）","en":"Writing (Boss Challenge)"},"items":[
-     {"kind":"write","id":"s3w1","words":30,"prompt":{"ms":"Kamu sedang menyiapkan kerja sekolah Matematik. Tiba-tiba, dua orang rakan datang mengajak kamu bermain bola sepak. Apakah yang akan kamu lakukan? Buat pertimbangan dan nyatakan keputusan.","zh":"你正在做数学作业，两个朋友突然来找你踢足球。你会怎么做？请考虑后做出决定。","en":"You are doing Maths homework when two friends ask you to play football. What will you do? Decide and explain."},"model":{"ms":"Saya akan menyiapkan kerja sekolah Matematik terlebih dahulu kerana itu tanggungjawab saya. Selepas selesai, barulah saya bermain bola sepak bersama rakan-rakan.","zh":"我会先做完数学作业，因为那是我的责任；做完后再和朋友踢球。","en":"I will finish my Maths homework first because it is my responsibility; then I will play football with my friends."},"e":{"ms":"Nyatakan keputusan + sebab (tanggungjawab dahulu). Hadkan 30 patah perkataan.","zh":"写出决定 + 理由（先尽责），≤30 字。","en":"State your decision + reason (duty first); ≤30 words."}},
+     {"kind":"write","id":"s3w1","words":30,"prompt":{"ms":"{NAME}, cuba fikirkan situasi ini. Kamu sedang menyiapkan kerja sekolah Matematik. Tiba-tiba, dua orang rakan datang mengajak kamu bermain bola sepak. Apakah yang akan kamu lakukan? Buat pertimbangan dan nyatakan keputusan.","zh":"{NAME}，来想一想这个情况。你正在做数学作业，两个朋友突然来找你踢足球。你会怎么做？请考虑后做出决定。","en":"{NAME}, let's think about this. You are doing Maths homework when two friends ask you to play football. What will you do? Decide and explain."},"model":{"ms":"Saya akan menyiapkan kerja sekolah Matematik terlebih dahulu kerana itu tanggungjawab saya. Selepas selesai, barulah saya bermain bola sepak bersama rakan-rakan.","zh":"我会先做完数学作业，因为那是我的责任；做完后再和朋友踢球。","en":"I will finish my Maths homework first because it is my responsibility; then I will play football with my friends."},"e":{"ms":"Nyatakan keputusan + sebab (tanggungjawab dahulu). Hadkan 30 patah perkataan.","zh":"写出决定 + 理由（先尽责），≤30 字。","en":"State your decision + reason (duty first); ≤30 words."}},
      {"kind":"write","id":"s3w2","words":50,"prompt":{"ms":"Tuliskan pendapat kamu tentang cara-cara memupuk semangat kejiranan, dalam SATU perenggan.","zh":"用一段话写出你对如何培养睦邻精神的看法。","en":"Write your opinion on how to build a good neighbourly spirit, in ONE paragraph."},"graphic":{"ms":"Bahan grafik: membantu jiran · mengeratkan hubungan · menyertai aktiviti bersama · menambah kefahaman.","zh":"图表提示：帮助邻居 · 增进关系 · 参加共同活动 · 增进了解。","en":"Graphic cues: help neighbours · strengthen ties · join shared activities · build understanding."},"model":{"ms":"Terdapat banyak cara untuk memupuk semangat kejiranan. Kita hendaklah saling membantu jiran apabila mereka memerlukan pertolongan. Selain itu, kita boleh menyertai aktiviti bersama seperti gotong-royong. Amalan ini dapat mengeratkan hubungan dan menambah kefahaman antara jiran.","zh":"培养睦邻精神有很多方法。邻居需要帮助时我们应互相帮忙。此外，可以参加共同活动如合作打扫。这些做法能增进邻里关系与了解。","en":"There are many ways to build neighbourly spirit. We should help neighbours when they need it. Besides, we can join shared activities like gotong-royong. These habits strengthen ties and understanding among neighbours."},"e":{"ms":"Satu perenggan, ≤50 patah perkataan; guna 'Selain itu'.","zh":"一段，≤50 字；用 \"Selain itu\"。","en":"One paragraph, ≤50 words; use 'Selain itu'."}},
      {"kind":"write","id":"s3w3","words":80,"prompt":{"ms":"Berdasarkan tema 'Di Dusun Datuk', tulis sebuah karangan (cerita ATAU catatan).","zh":"以 \"在爷爷的果园\" 为主题，写一篇作文（记叙文或日记）。","en":"On the theme 'At Grandfather's Orchard', write a composition (story OR diary)."},"model":{"ms":"Pada hujung minggu, saya sekeluarga pergi ke dusun datuk. Pokok buah-buahan tumbuh subur di sekeliling kami. Datuk mengajar saya cara memetik buah durian dan manggis yang masak. Saya membantu datuk mengisi bakul dengan buah-buahan. Kami juga menikmati air kelapa muda yang segar. Hari itu sungguh menyeronokkan kerana kami dapat menghirup udara segar dan merapatkan hubungan kekeluargaan.","zh":"周末，我们全家去爷爷的果园。果树在四周长得茂盛。爷爷教我怎样采摘成熟的榴梿和山竹。我帮爷爷把水果装满篮子。我们还享用了清凉的椰青。那一天非常开心，因为我们呼吸到新鲜空气，也增进了家人感情。","en":"On the weekend my family went to grandfather's orchard. Fruit trees grew lushly around us. Grandfather taught me to pick ripe durians and mangosteens. I helped fill the baskets with fruit. We also enjoyed fresh coconut water. The day was wonderful because we breathed fresh air and grew closer as a family."},"e":{"ms":"50–80 patah perkataan: pembukaan → aktiviti → penutup (perasaan).","zh":"50–80 字：开头 → 活动 → 结尾（感受）。","en":"50–80 words: opening → activities → closing (feeling)."}}
    ]}
@@ -1114,7 +1122,7 @@ COURSE.forEach(m=>{ const r=RECAP[m.id]; if(r) m.lessons.forEach((l,i)=>{ if(r[i
       {"kind":"saq","id":"s4p4","q":"Apakah tujuan penduduk Kampung Seroja bekerjasama? (2 markah)","model":{"ms":"Penduduk Kampung Seroja bekerjasama untuk membaiki rumah Pak Abu yang dihempap pokok kelapa.","zh":"为了一起修好被椰树压坏的 Pak Abu 的房子。","en":"To repair Pak Abu's house, which was crushed by the coconut tree."},"e":{"ms":"Cari tujuan dalam petikan: membaiki rumah Pak Abu.","zh":"从文中找目的：合作修好 Pak Abu 的家。","en":"Find the purpose in the text: to fix Pak Abu's house."}}
      ]},
    { "type":"writing","boss":true,"t":{"ms":"Penulisan (Cabaran Boss)","zh":"写作（Boss 挑战）","en":"Writing (Boss Challenge)"},"items":[
-     {"kind":"write","id":"s4w1","words":30,"prompt":{"ms":"Ravi berjanji menghadiri sambutan hari lahir sahabatnya, Nizam. Namun, pada hari yang sama, ayah Ravi mengajaknya pulang ke kampung menziarahi neneknya yang sedang sakit. Jika kamu Ravi, apakah tindakan yang patut kamu lakukan?","zh":"Ravi 答应去好友 Nizam 的生日会，但同一天爸爸要带他回乡探望生病的奶奶。如果你是 Ravi，你该怎么做？","en":"Ravi promised to attend his friend Nizam's birthday, but the same day his father asks him to visit his sick grandmother in the village. If you were Ravi, what would you do?"},"model":{"ms":"Saya akan pulang ke kampung menziarahi nenek yang sakit kerana kesihatan nenek lebih penting. Saya akan memberitahu Nizam lebih awal dan meraikannya pada hari lain.","zh":"我会回乡探望生病的奶奶，因为奶奶的健康更重要；我会提早告诉 Nizam，改天再为他庆祝。","en":"I would visit my sick grandmother because her health matters more. I would tell Nizam early and celebrate with him another day."},"e":{"ms":"Nyatakan keputusan + sebab + cara beradab (beritahu kawan). Hadkan 30 patah perkataan.","zh":"写出决定 + 理由 + 体谅（提前告知朋友），≤30 字。","en":"State your decision + reason + courtesy (tell the friend); ≤30 words."}},
+     {"kind":"write","id":"s4w1","words":30,"prompt":{"ms":"{NAME}, cuba fikirkan situasi ini. Ravi berjanji menghadiri sambutan hari lahir sahabatnya, Nizam. Namun, pada hari yang sama, ayah Ravi mengajaknya pulang ke kampung menziarahi neneknya yang sedang sakit. Jika kamu Ravi, apakah tindakan yang patut kamu lakukan?","zh":"{NAME}，来想一想这个情况。Ravi 答应去好友 Nizam 的生日会，但同一天爸爸要带他回乡探望生病的奶奶。如果你是 Ravi，你该怎么做？","en":"{NAME}, let's think about this. Ravi promised to attend his friend Nizam's birthday, but the same day his father asks him to visit his sick grandmother in the village. If you were Ravi, what would you do?"},"model":{"ms":"Saya akan pulang ke kampung menziarahi nenek yang sakit kerana kesihatan nenek lebih penting. Saya akan memberitahu Nizam lebih awal dan meraikannya pada hari lain.","zh":"我会回乡探望生病的奶奶，因为奶奶的健康更重要；我会提早告诉 Nizam，改天再为他庆祝。","en":"I would visit my sick grandmother because her health matters more. I would tell Nizam early and celebrate with him another day."},"e":{"ms":"Nyatakan keputusan + sebab + cara beradab (beritahu kawan). Hadkan 30 patah perkataan.","zh":"写出决定 + 理由 + 体谅（提前告知朋友），≤30 字。","en":"State your decision + reason + courtesy (tell the friend); ≤30 words."}},
      {"kind":"write","id":"s4w2","words":50,"prompt":{"ms":"Tuliskan pendapat kamu tentang cara-cara mengeratkan hubungan kejiranan, dalam SATU perenggan.","zh":"用一段话写出你对如何增进邻里关系的看法。","en":"Write your opinion on how to strengthen neighbourly ties, in ONE paragraph."},"graphic":{"ms":"Bahan grafik: mengadakan rumah terbuka bersempena sambutan · memupuk semangat kejiranan · menziarahi jiran yang ditimpa kemalangan · menunjukkan keprihatinan terhadap jiran.","zh":"图表提示：节庆办开放门户 · 培养睦邻精神 · 探望遭遇意外的邻居 · 关心邻居。","en":"Graphic cues: hold open houses on festive days · build neighbourly spirit · visit neighbours in trouble · show concern for neighbours."},"model":{"ms":"Terdapat banyak cara untuk mengeratkan hubungan kejiranan. Kita boleh mengadakan rumah terbuka bersempena sambutan perayaan. Selain itu, kita perlu menziarahi jiran yang ditimpa kemalangan dan menunjukkan keprihatinan terhadap mereka. Amalan ini dapat memupuk semangat kejiranan yang harmoni.","zh":"增进邻里关系有很多方法。节庆时可以办开放门户。此外，要探望遭遇意外的邻居，并对他们表示关心。这些做法能培养和睦的睦邻精神。","en":"There are many ways to strengthen neighbourly ties. We can hold open houses on festive days. Besides, we should visit neighbours in trouble and show concern. These habits build a harmonious neighbourly spirit."},"e":{"ms":"Satu perenggan, ≤50 patah perkataan; guna 'Selain itu'.","zh":"一段，≤50 字；用 \"Selain itu\"。","en":"One paragraph, ≤50 words; use 'Selain itu'."}},
      {"kind":"write","id":"s4w3","words":80,"prompt":{"ms":"Berdasarkan tema 'Di Dusun Datuk', tulis sebuah karangan (cerita ATAU catatan).","zh":"以 \"在爷爷的果园\" 为主题，写一篇作文（记叙文或日记）。","en":"On the theme 'At Grandfather's Orchard', write a composition (story OR diary)."},"model":{"ms":"Pada cuti sekolah, saya dan keluarga mengunjungi dusun datuk. Pagi itu, udara di dusun sangat nyaman dan segar. Datuk membawa kami melihat pelbagai pokok buah-buahan seperti durian, rambutan dan manggis. Saya membantu datuk memetik buah yang masak. Kami menikmati buah-buahan itu bersama-sama dengan gembira. Pengalaman ini sungguh bermakna kerana mengajar saya menghargai alam dan kerja keras datuk.","zh":"学校假期，我和家人去爷爷的果园。那天早晨，果园空气清新宜人。爷爷带我们看各种果树，如榴梿、红毛丹和山竹。我帮爷爷采摘成熟的水果。我们一起开心地享用水果。这次经历很有意义，因为它让我学会珍惜大自然和爷爷的辛劳。","en":"During the school holiday my family visited grandfather's orchard. That morning the air was cool and fresh. Grandfather showed us many fruit trees like durian, rambutan and mangosteen. I helped him pick the ripe fruit. We enjoyed the fruit together happily. The experience was meaningful because it taught me to value nature and grandfather's hard work."},"e":{"ms":"50–80 patah perkataan: pembukaan → aktiviti → penutup (pengajaran).","zh":"50–80 字：开头 → 活动 → 结尾（启示）。","en":"50–80 words: opening → activities → closing (lesson)."}}
    ]}
@@ -1204,6 +1212,7 @@ const EXAM_UI = {
   reportBtn:"📋 Laporan Kemajuan Saya", reportTitle:"Laporan Kemajuan",
   repThisLesson:"Pencapaian kamu kali ini", repCorrect:"Jawapan betul", repAcc:"Ketepatan", repXPGain:"XP diperoleh", repWritingDone:"Cabaran penulisan selesai!",
   repLearned:"Apa yang kamu pelajari", repJourney:"Perjalanan kamu setakat ini", repLessons:"Pelajaran selesai", repTotalXP:"Jumlah XP", repStreakDays:"Hari berturut-turut", repClose:"Teruskan",
+  resetBtn:"🔄 Mula Semula", resetTitle:"Mula semula?", resetMsg:"Semua kemajuan (XP, lencana, pelajaran selesai dan kesalahan) akan dipadamkan. Nama dan bahasa kekal. Tindakan ini tidak boleh dibuat asal.", resetYes:"Ya, mula semula", resetNo:"Batal",
   repCheerHigh:"Hebat sungguh, {name}! Kamu semakin pandai!", repCheerMid:"Bagus, {name}! Setiap latihan buat kamu lebih hebat!", repCheerStart:"Syabas, {name}! Kamu sudah melangkah maju!", recapHi:"Hebat! Ingat poin ini, mesti boleh nanti!",
   cpSub:"UPSA · Tahun 5",
   passage:"Petikan", passageSub:"Baca petikan dengan teliti, kemudian jawab soalan.",
@@ -1224,6 +1233,7 @@ const EXAM_UI = {
   reportBtn:"📋 我的进步报告", reportTitle:"进步报告",
   repThisLesson:"这一关你的表现", repCorrect:"答对题数", repAcc:"正确率", repXPGain:"获得 XP", repWritingDone:"完成了写作挑战！",
   repLearned:"你学会了", repJourney:"你的学习旅程", repLessons:"已完成关卡", repTotalXP:"总 XP", repStreakDays:"连续学习天数", repClose:"继续",
+  resetBtn:"🔄 重新开始", resetTitle:"要重新开始吗？", resetMsg:"所有进度（XP、徽章、已完成关卡和错题）都会清空。名字和语言会保留。此操作无法撤销。", resetYes:"是的，全部重做", resetNo:"取消",
   repCheerHigh:"太厉害了，{name}！你越来越聪明了！", repCheerMid:"做得好，{name}！每次练习都让你更棒！", repCheerStart:"加油，{name}！你已经向前迈进了一步！", recapHi:"太棒了！记住这几点，下次准没错！",
   cpSub:"UPSA · 五年级",
   passage:"阅读篇章", passageSub:"仔细阅读以下篇章，然后作答。",
@@ -1244,6 +1254,7 @@ const EXAM_UI = {
   reportBtn:"📋 My Progress Report", reportTitle:"Progress Report",
   repThisLesson:"How you did this time", repCorrect:"Correct answers", repAcc:"Accuracy", repXPGain:"XP earned", repWritingDone:"Writing challenge done!",
   repLearned:"What you learned", repJourney:"Your journey so far", repLessons:"Lessons done", repTotalXP:"Total XP", repStreakDays:"Day streak", repClose:"Continue",
+  resetBtn:"🔄 Start Over", resetTitle:"Start over?", resetMsg:"All progress (XP, badges, completed lessons and mistakes) will be cleared. Name and language are kept. This cannot be undone.", resetYes:"Yes, start over", resetNo:"Cancel",
   repCheerHigh:"Amazing, {name}! You're getting smarter!", repCheerMid:"Well done, {name}! Every practice makes you stronger!", repCheerStart:"Great job, {name}! You've taken a step forward!", recapHi:"Awesome! Remember these and you've got it!",
   cpSub:"UPSA · Year 5",
   passage:"Passage", passageSub:"Read the passage carefully, then answer.",
@@ -1826,6 +1837,25 @@ function startLesson(mi,li){
   o.querySelector("#repgo").onclick=()=>o.remove();
   if(typeof confetti==="function") confetti(d.isBoss?48:28);
  }
+ /* reset all progress (keeps name + language) */
+ function resetProgress(){
+  S.xp = 0; S.done = {}; S.review = []; S.day = {d:"",xp:0}; S.streak = {count:0,last:""};
+  try{ window.__lastLesson = null; }catch(e){}
+  save();
+  closeOvl();
+  location.reload();
+ }
+ function showResetConfirm(){
+  const t = T();
+  const o = sheet(`<div class="rst-box"><div class="rst-ic">🔄</div>`
+   + `<h3 class="rst-h">${esc(t.resetTitle)}</h3>`
+   + `<p class="rst-p">${esc(t.resetMsg)}</p>`
+   + `<button class="btn btn-primary btn-block" id="rstyes">${esc(t.resetYes)}</button>`
+   + `<button class="btn btn-ghost btn-block" id="rstno" style="margin-top:10px">${esc(t.resetNo)}</button></div>`);
+  const no=o.querySelector("#rstno"), yes=o.querySelector("#rstyes");
+  if(no) no.onclick = closeOvl;
+  if(yes) yes.onclick = resetProgress;
+ }
  $("quitbtn").onclick = ()=>{ askConfirm(T().quit, T().quitYes, T().quitNo, ()=>{ P=null; hideFeedback(); killRec(); renderHome(); }); };
 
 function setProg(){
@@ -1919,7 +1949,7 @@ function renderStep(){
   const isF = st.kind==="fill";
   const correctText = it.o[it.a];
   const opts = shuffle(it.o.slice());
-  const q = isF ? esc(it.q).replace(/___/g,'<span class="qblank"></span>') : esc(it.q);
+  const q = isF ? esc(px(it.q)).replace(/___/g,'<span class="qblank"></span>') : esc(px(it.q));
   const readBtn = st.passage ? `<button type="button" class="readback" id="rdback">\u{1F4D6} ${esc(t.readAgain)}</button>` : "";
   const inner = readBtn + mascotBubble(q)
    + opts.map(o=>`<button class="opt" data-v="${esc(o)}"><span class="radio"></span><span>${esc(o)}</span></button>`).join("")
@@ -1949,7 +1979,7 @@ function renderStep(){
  if(st.kind==="saq"){
   const it = st.it;
   const readBtn = st.passage ? `<button type="button" class="readback" id="rdback">\u{1F4D6} ${esc(t.readAgain)}</button>` : "";
-  const inner = readBtn + mascotBubble(esc(it.q))
+  const inner = readBtn + mascotBubble(esc(px(it.q)))
    + `<textarea class="examinput" id="saqin" rows="3" placeholder="${esc(t.typeHere)}"></textarea>`
    + `<div id="modelslot"></div>`;
   box.innerHTML = stepShell(stepNum+" · +5 XP", esc(t.saqT), t.saqSub, inner,
@@ -1966,7 +1996,7 @@ function renderStep(){
  }
  if(st.kind==="write"){
   const it = st.it;
-  const inner = `<div class="qsub writeprompt">${esc(tri(it.prompt))}</div>`
+  const inner = `<div class="qsub writeprompt">${esc(px(tri(it.prompt)))}</div>`
    + (it.graphic?`<div class="readbox small"><div class="readbody">${esc(tri(it.graphic)).replace(/\n/g,"<br>")}</div></div>`:"")
    + `<textarea class="examinput" id="wrin" rows="6" placeholder="${esc(t.typeHere)}"></textarea>`
    + `<div class="wcount"><span id="wc">0</span> / ${it.words} ${esc(t.words)}</div>`
@@ -2432,10 +2462,11 @@ function renderProfile(){
  $("bigavatar").innerHTML = AVATAR_SVG;
  $("avlv").textContent = "Lv "+L.lv;
  $("psub").textContent = t.cpSub;
+ { const rbtn=$("resetbtn"); if(rbtn){ rbtn.textContent=t.resetBtn; rbtn.onclick=showResetConfirm; } }
  $("pfbar").style.width = L.pct+"%";
  $("pflvltxt").textContent = t.toNext.replace("{n}", LVL_XP-L.into).replace("{lv}", L.lv+1);
  $("pstat-xp").textContent = st.xp;
- $("pstat-les").textContent = st.lessons+"/25";
+ $("pstat-les").textContent = st.lessons+"/"+COURSE.reduce((a,m)=>a+m.lessons.length,0);
  $("pstat-leslbl").textContent = t.statLessons;
  $("pstat-st").textContent = st.streak;
  $("pstat-stlbl").textContent = t.statStreak;

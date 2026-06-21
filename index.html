@@ -743,6 +743,41 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
 .par-st.ok{ color:var(--success-d); background:#E6F4EE; }
 .par-st.todo{ color:var(--bad-d); background:#F6E4E8; }
 .par-note{ font-size:12.5px; color:var(--muted); line-height:1.55; margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+
+/* ---- parent report: formal layout ---- */
+.par-head{ text-align:center; margin-bottom:14px; }
+.par-kicker{ font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--brand); margin-top:2px; }
+.par-meta-top{ display:flex; gap:8px; background:var(--canvas); border:1px solid var(--line); border-radius:14px; padding:11px 12px; margin-bottom:14px; }
+.par-meta-top > div{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.par-meta-top .pk{ font-size:10.5px; color:var(--muted); font-weight:800; letter-spacing:.03em; text-transform:uppercase; }
+.par-meta-top b{ font-size:13px; color:var(--ink); font-weight:800; line-height:1.35; }
+.par-stats{ display:flex; gap:9px; margin-bottom:16px; }
+.par-stat{ flex:1; text-align:center; background:var(--canvas); border:1px solid var(--line); border-radius:14px; padding:11px 6px; }
+.par-stat b{ display:block; font-size:24px; font-weight:800; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums; }
+.par-stat span{ display:block; font-size:11.5px; font-weight:700; color:var(--muted); margin-top:4px; }
+.par-stat.ok b{ color:var(--success-d); } .par-stat.todo b{ color:var(--bad-d); }
+.par-num{ display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; background:var(--brand); color:#fff; font-size:12px; font-weight:800; margin-right:8px; vertical-align:middle; }
+.par-sign{ display:flex; align-items:flex-end; gap:10px; margin-top:18px; }
+.par-sign > span{ font-size:12px; color:var(--muted); font-weight:700; white-space:nowrap; }
+.par-sign-line{ flex:1; border-bottom:1.5px dotted var(--line); height:18px; }
+.par-actions{ margin-top:16px; }
+
+/* ---- print / save-PDF: show only the report, clean A4 ---- */
+@media print{
+  @page{ margin:14mm; }
+  body > *:not(.par-ovl){ display:none !important; }
+  .par-ovl{ position:static !important; display:block !important; background:#fff !important;
+    -webkit-backdrop-filter:none !important; backdrop-filter:none !important; padding:0 !important; overflow:visible !important; animation:none !important; }
+  .par-card{ box-shadow:none !important; border:none !important; max-width:100% !important; width:100% !important;
+    border-radius:0 !important; margin:0 !important; padding:0 !important; animation:none !important; }
+  .par-head{ border-bottom:2px solid #222; padding-bottom:10px; }
+  .par-meta-top, .par-stat, .par-item, .par-note{ background:#fff !important; }
+  .par-item{ break-inside:avoid; page-break-inside:avoid; border:1px solid #ccc !important; border-left:4px solid #888 !important; }
+  .par-item.fixed{ border-left:4px solid #2a8 !important; }
+  .noprint{ display:none !important; }
+  .par-sign{ margin-top:26px; }
+  .par-sign-line{ border-bottom:1.5px solid #222; }
+}
 </style>
 </head>
 <body>
@@ -1526,6 +1561,132 @@ SUBJECT_COURSES.sci = [
  SUBJECT_COURSES.sci.forEach(m=>{ zf(m.title); m.lessons.forEach(l=>{ zf(l.t); (l.recap||[]).forEach(zf); (l.items||[]).forEach(it=>{ zf(it.e); }); }); });
 })();
 
+/* ============================================================
+   VARIANT BANK — each id maps to alternative questions that test
+   the SAME skill with DIFFERENT content. On every presentation
+   (lesson or review) the engine randomly serves base or a variant,
+   so the child learns the pattern, not a memorised answer.
+   ============================================================ */
+function pickVariant(it){
+ if(!it || !it.variants || !it.variants.length) return it;
+ const i = Math.floor(Math.random()*(it.variants.length+1));
+ if(i===it.variants.length) return it;            // base
+ const v = it.variants[i];
+ return Object.assign({}, it, {q:v.q, o:v.o, a:v.a, e:v.e||it.e, variants:null});
+}
+
+const VARIANTS = {
+
+ /* ---------- BM · tatabahasa & kosa kata ---------- */
+ "s1g1":[{q:"\"___ akan membersihkan kelas ini sebelum pulang,\" kata Mei Ling dan Siti kepada guru mereka.","o":["Kami","Kita","Kamu","Mereka"],"a":0,"e":{ms:"'Kami' tidak termasuk pendengar (guru).","zh":"kami 不包括听话者（老师）。","en":"'Kami' excludes the listener (the teacher)."}}],
+ "s1g2":[{q:"Pilih ayat yang betul.","o":["Cikgu memuji murid yang rajin itu.","Murid itu gembira sangat-sangat sungguh.","Kereta itu laju terlalu di lebuh raya.","Dia menyanyi dengan merdu sungguh suaranya."],"a":0,"e":{ms:"Ayat A betul; yang lain salah susunan/penanda darjah berganda.","zh":"A 正确；其余程度词重复或词序错。","en":"A is correct; the rest misuse/duplicate intensifiers."}}],
+ "s1g3":[{q:"Penjodoh bilangan yang sesuai bagi perkataan 'kerusi' ialah ___.","o":["buah","helai","kaki","orang"],"a":0,"e":{ms:"Perabot seperti kerusi guna 'buah'.","zh":"椅子等家具量词用 buah。","en":"Furniture like a chair uses 'buah'."}}],
+ "s1v1":[{q:"Perkataan 'gembira' boleh digantikan dengan ___.","o":["riang","sedih","marah","penat"],"a":0,"e":{ms:"'gembira' = 'riang'.","zh":"gembira = riang（快乐）。","en":"'gembira' = 'riang' (happy)."}}],
+
+ "s2g1":[{q:"\"Kebersihan kelas mesti ___ jaga bersama-sama,\" kata ketua kelas kepada rakan sekelasnya.","o":["kita","saya","kamu","mereka"],"a":0,"e":{ms:"'kita' termasuk pendengar — semua sama-sama jaga.","zh":"kita 含说话者与听话者，大家一起。","en":"'kita' includes the listener — everyone together."}}],
+ "s2g2":[{q:"Ali ___ basikal ke sekolah setiap hari.","o":["menunggang","memakan","membaca","menyanyi"],"a":0,"e":{ms:"Naik basikal = 'menunggang'.","zh":"骑脚车 = menunggang。","en":"Ride a bicycle = 'menunggang'."}}],
+ "s2g3":[{q:"Pilih ayat yang betul.","o":["Air sungai itu jernih benar.","Budak itu sangat nakal sungguh sekali.","Sejuk amat udara pagi ini terlalu.","Sedap sekali masakan ini agak."],"a":0,"e":{ms:"A betul (jernih benar); yang lain penanda darjah berganda/salah letak.","zh":"A 正确；其余程度词重复或错位。","en":"A is correct; the rest stack/misplace intensifiers."}}],
+ "s2g4":[{q:"Penjodoh bilangan yang sesuai bagi perkataan 'rumah' ialah ___.","o":["buah","biji","orang","ekor"],"a":0,"e":{ms:"Bangunan seperti rumah guna 'buah' (sebuah rumah).","zh":"房子等建筑量词 buah。","en":"A building like a house uses 'buah'."}}],
+ "s2v1":[{q:"Perkataan 'cantik' boleh digantikan dengan ___.","o":["indah","buruk","kotor","lama"],"a":0,"e":{ms:"'cantik' = 'indah'.","zh":"cantik = indah（美丽）。","en":"'cantik' = 'indah' (beautiful)."}}],
+
+ "s3g1":[{q:"\"Bilakah peperiksaan sekolah ___ bermula?\" tanya ibu kepada anaknya.","o":["kamu","kami","kita","mereka"],"a":0,"e":{ms:"Ibu bertanya kepada anak tentang 'sekolah kamu'.","zh":"妈妈问孩子「你的学校」→ kamu。","en":"The mother asks her child about 'your school'."}}],
+ "s3g2":[{q:"Majlis sukan sekolah ___ diadakan pada minggu hadapan.","o":["akan","telah","sedang","pernah"],"a":0,"e":{ms:"'minggu hadapan' = masa hadapan → 'akan'.","zh":"「下周」表未来 → akan。","en":"'next week' is future → 'akan'."}}],
+ "s3g3":[{q:"Pilih ayat yang betul.","o":["Bapa saya ialah seorang doktor.","Dia adalah seorang guru yang baik.","Kucing itu ialah comel sekali.","Pelajar itu ialah pandai dalam Matematik."],"a":0,"e":{ms:"'ialah' + kata nama (seorang doktor); 'adalah' + kata adjektif.","zh":"ialah 接名词；形容词前用 adalah。","en":"'ialah' + noun; 'adalah' + adjective."}}],
+ "s3g4":[{q:"Penjodoh bilangan yang sesuai bagi perkataan 'telur' ialah ___.","o":["biji","tongkol","kaki","helai"],"a":0,"e":{ms:"Benda bulat kecil seperti telur guna 'biji'.","zh":"蛋等小圆物量词 biji。","en":"Small round things like an egg use 'biji'."}}],
+ "s3v1":[{q:"Perkataan 'pandai' boleh digantikan dengan ___.","o":["bijak","bodoh","malas","lemah"],"a":0,"e":{ms:"'pandai' = 'bijak'.","zh":"pandai = bijak（聪明）。","en":"'pandai' = 'bijak' (clever)."}}],
+
+ "s4g1":[{q:"\"Adakah ___ sudah menyiapkan kerja sekolah?\" tanya Rina kepada Aishah.","o":["awak","kami","kita","mereka"],"a":0,"e":{ms:"Bertanya kepada seorang → 'awak'.","zh":"对一个人说「你」→ awak。","en":"Asking one person 'you' → 'awak'."}}],
+ "s4g2":[{q:"Ibu memasak air itu sehingga ___.","o":["mendidih","beku","kering","reput"],"a":0,"e":{ms:"Air dimasak sehingga 'mendidih'.","zh":"煮水到「沸腾」= mendidih。","en":"Water boiled until 'mendidih' (boiling)."}}],
+ "s4g3":[{q:"Pilih ayat yang betul.","o":["Pemandangan di puncak bukit itu indah sungguh.","Manis terlalu air ini untuk diminum sekali.","Tinggi amat pokok kelapa itu agak.","Laju sungguh sangat kereta lumba itu terlalu."],"a":0,"e":{ms:"A betul; yang lain penanda darjah salah letak/berganda.","zh":"A 正确；其余程度词错位或重复。","en":"A is correct; the rest misplace/stack intensifiers."}}],
+ "s4g4":[{q:"Penjodoh bilangan yang sesuai bagi perkataan 'kereta' ialah ___.","o":["buah","biji","ekor","kaki"],"a":0,"e":{ms:"Kenderaan seperti kereta guna 'buah'.","zh":"车等用量词 buah（sebuah kereta）。","en":"Vehicles like a car use 'buah'."}}],
+ "s4v1":[{q:"Perkataan 'pantas' boleh digantikan dengan ___.","o":["laju","perlahan","lemah","berat"],"a":0,"e":{ms:"'pantas' = 'laju'.","zh":"pantas = laju（快）。","en":"'pantas' = 'laju' (fast)."}}],
+
+ /* ---------- 历史 Sejarah ----------
+    SAFE variants: reworded stem, SAME correct answer as the base, no new facts. */
+ "h611":[{q:"吉隆坡、布城、纳闽这三个联邦直辖区，是由下列哪一位统辖？","o":["国家元首","各州苏丹","拉惹","州务大臣"],"a":0,"e":{zh:"联邦直辖区由国家元首统辖。"}}],
+ "h612":[{q:"「人民效忠君主与国家」属于国家原则中的哪一条？","o":["忠于君国","信奉上苍","维护宪法","培养德行"],"a":0,"e":{zh:"效忠君主与国家 = 忠于君国。"}}],
+ "h613":[{q:"「君权」指的是什么？","o":["君主对其政府的执政权力","君主对国家宗教的决定权","君主干预他国的权力","君主管理婚姻的权力"],"a":0,"e":{zh:"君权 = 君主对其政府的执政权力。"}}],
+ "h614":[{q:"我国独立至今实行的君主制度属于哪一种？","o":["成立君主立宪制度","君主独裁制度","中央集权制度","地方分权制度"],"a":0,"e":{zh:"我国实行君主立宪制度。"}}],
+ "h615":[{q:"下列哪一种做法体现了对君主制度的珍惜？","o":["遵循我国君主旨意","违背君主命令","无视君主制度","公开批评君主"],"a":0,"e":{zh:"珍惜君主制度 = 遵循君主旨意。"}}],
+ "h616":[{q:"为什么国民应珍惜并维护君主制度？（选正确）","o":["君主制度是我国遗产 + 国家团结象征","它让人民感到畏惧","它能随意更改宪法","它已经不合时宜"],"a":0,"e":{zh:"君主制度是国家遗产，也是团结象征。"}}],
+ "h617":[{q:"判断：君臣协议规定君主须公正无私地治理人民。","o":["正确","错误"],"a":0,"e":{zh:"对。君主公正治民、人民效忠君主。"}}],
+ "h621":[{q:"西方殖民者（葡萄牙、荷兰、英国）在马来半岛引入的宗教是？","o":["基督教","佛教","兴都教","伊斯兰教"],"a":0,"e":{zh:"西方殖民者引入基督教。"}}],
+ "h622":[{q:"促使伊斯兰教传入马六甲王朝的主要原因是？（选正确）","o":["马六甲苏丹信奉 + 穆斯林学者传教","公主远嫁中国","西方航海家传教","马六甲沦为殖民地"],"a":0,"e":{zh:"苏丹信奉 + 学者商人传教。"}}],
+ "h623":[{q:"《马六甲法典》所涵盖的内容是？","o":["行政、刑事、交易与家庭","只有海上贸易","只有宗教祭祀","只有军事作战"],"a":0,"e":{zh:"《马六甲法典》涉行政、刑事、交易、家庭。"}}],
+ "h624":[{q:"在英国殖民时期，伊斯兰法的施行范围被限制在？","o":["家庭、遗产与天课","刑事与军事","贸易与外交","教育与税收"],"a":0,"e":{zh:"英殖民时期伊斯兰法仅限家庭、遗产、天课。"}}],
+ "h625":[{q:"依据联邦宪法，我国的联邦宗教是哪一个？","o":["伊斯兰教","锡克教","基督教","兴都教"],"a":0,"e":{zh:"伊斯兰教是联邦宗教。"}}],
+ "h626":[{q:"下列哪一项属于伊斯兰教的教义？","o":["履行五功与六信","相信祖灵","相信轮回","遵行八正道"],"a":0,"e":{zh:"伊斯兰教：五功与六信。"}}],
+ "h627":[{q:"保持言行温和、不偏激，体现了哪一项宗教普世价值？","o":["中庸","包容","仁爱","竞争"],"a":0,"e":{zh:"温和不偏激 = 中庸。"}}],
+ "h628":[{q:"判断：联邦宪法把伊斯兰教、佛教、兴都教与基督教一同列为联邦宗教。","o":["错误","正确"],"a":0,"e":{zh:"错。只有伊斯兰教是联邦宗教。"}}],
+ "h631":[{q:"下列关于马来语系谱的说法，哪一项正确？","o":["马来语源自南方语门(Filum Austrik)","源于亚非语系","源于汉藏语系","是西方国家方言"],"a":0,"e":{zh:"马来语源自南方语门。"}}],
+ "h632":[{q:"下列哪个地区使用马来语？","o":["印度尼西亚","巴西","意大利","乌拉圭"],"a":0,"e":{zh:"印尼广泛使用马来语。"}}],
+ "h633":[{q:"马来语词汇「putera」是从哪种语言借来的？","o":["梵语","华语","荷兰语","淡米尔语"],"a":0,"e":{zh:"putera 源自梵语。"}}],
+ "h634":[{q:"马来语作为教育语言，主要体现在？","o":["作为学校和高等学府的教学媒介语","教外国人宗教","传承民间故事","大学生私下沟通"],"a":0,"e":{zh:"马来语是学校与高等学府教学媒介语。"}}],
+ "h635":[{q:"我们了解马来语系谱的主要目的是？","o":["领悟马来语是国家遗产，应引以为荣","因为它历史尚短","因为它比别的语言优越","因为它是贵族语言"],"a":0,"e":{zh:"了解系谱 → 珍惜国家遗产。"}}],
+ "h636":[{q:"下列哪种做法能发挥马来语「团结语言」的功能？","o":["参加生活营时，以马来语与友族交流","只在家与长辈闲聊","向游客介绍景点","演唱马来歌曲"],"a":0,"e":{zh:"与友族用马来语交流 = 团结功能。"}}],
+ "h711":[{q:"藩属国每三年向暹罗进献金银花，目的是？","o":["获得安全保障","获得额外奖赏","获得经济利益","获得结盟机会"],"a":0,"e":{zh:"进献金银花换取安全保障。"}}],
+ "h712":[{q:"1511年攻占马六甲的外来势力是？","o":["葡萄牙","荷兰","英国","日本"],"a":0,"e":{zh:"1511 葡萄牙占领马六甲。"}}],
+ "h713":[{q:"外来势力之所以想殖民我国，最主要的因素是？","o":["我国拥有丰富的天然资源","广阔无疆的土地","多元的宗教","苏丹的领袖才能"],"a":0,"e":{zh:"丰富天然资源是主因。"}}],
+ "h714":[{q:"詹姆斯·布洛克统治砂拉越时自封的称号是？","o":["白人拉惹","总督","参政司","顾问官"],"a":0,"e":{zh:"布洛克自封白人拉惹。"}}],
+ "h715":[{q:"英国北婆罗洲公司正式统治沙巴是在哪一年？","o":["1881年","1786年","1824年","1841年"],"a":0,"e":{zh:"1881 年起统治沙巴。"}}],
+ "h716":[{q:"英国人为发展交通，主要进行了什么建设？","o":["兴建铁路和公路","建立飞机场","兴建轻快铁","建立海底隧道"],"a":0,"e":{zh:"英国人兴建铁路与公路。"}}],
+ "h717":[{q:"我国最早被英国「干政」的州属是哪一个？","o":["霹雳","彭亨","沙巴","槟城"],"a":0,"e":{zh:"1874 干预霹雳。"}}],
+ "h718":[{q:"「海峡殖民地」由哪三个地方组成？","o":["槟城、马六甲、新加坡","槟城、霹雳、雪兰莪","马六甲、彭亨、柔佛","沙巴、砂拉越、纳闽"],"a":0,"e":{zh:"槟城+马六甲+新加坡。"}}],
+ "h721":[{q:"地方英雄拿督马哈拉惹里拉来自哪一个州属？","o":["霹雳","彭亨","森美兰","吉打"],"a":0,"e":{zh:"拿督马哈拉惹里拉（霹雳）。"}}],
+ "h722":[{q:"地方英雄拿督巴哈曼来自哪一个州属？","o":["彭亨","霹雳","森美兰","吉兰丹"],"a":0,"e":{zh:"拿督巴哈曼（彭亨）。"}}],
+ "h723":[{q:"地方英雄起来抗英，主要是因为？（选正确）","o":["英国干预马来风俗 + 反对英国推行的新政策","出让国家主权","英国强迫信教 + 出让主权","欢迎英国统治"],"a":0,"e":{zh:"英国干预风俗、推行新政策。"}}],
+ "h724":[{q:"在沙巴反抗英国北婆罗洲公司、于士兰吉河建堡垒的地方英雄是？","o":["末沙烈","安德农","督江谷","严端安达"],"a":0,"e":{zh:"末沙烈（沙巴）。"}}],
+ "h725":[{q:"从律师哈芝阿都拉曼为农民辩护一事，我们学到？","o":["遇到不公，挺身而出，捍卫正义","保持中立明哲保身","靠拢强势的一方","沉默以免惹祸"],"a":0,"e":{zh:"见义勇为、捍卫正义。"}}],
+ "h726":[{q:"下列哪些是珍惜地方英雄抗争历史的做法？（选正确）","o":["设立纪念馆/纪念碑 + 把事迹编入教科书","给后代敕封爵位 + 令人畏惧","随意更改历史","遗忘他们的事迹"],"a":0,"e":{zh:"建纪念馆/碑、编入教科书。"}}],
+ "h731":[{q:"领导泛马回教党、提倡「大马来由」概念的独立斗士是？","o":["布哈努丁赫尔米医生","依萨莫哈末","阿末波斯达曼","拿督哈芝阿都华合"],"a":0,"e":{zh:"布哈努丁赫尔米医生。"}}],
+ "h732":[{q:"「马来亚联邦（Malayan Union）」被撤销后，以哪个计划取代？","o":["马来亚联合邦计划","马来亚联盟计划","马来西亚联盟计划","马来西亚联合邦计划"],"a":0,"e":{zh:"Malayan Union → 马来亚联合邦。"}}],
+ "h733":[{q:"我国在1948年宣布进入紧急状态，主要原因是？","o":["受到共产党威胁","苏丹诞辰","国家元首驾崩","发生大规模瘟疫"],"a":0,"e":{zh:"对付共产党武装威胁。"}}],
+ "h734":[{q:"我国能成功争取独立，最主要的因素是？","o":["国家领袖睿智并具有协商精神","人民为英国效力","采用极端手法","掌握国家原则内容"],"a":0,"e":{zh:"领袖睿智 + 协商精神。"}}],
+ "h735":[{q:"1957年8月31日，东姑阿都拉曼在哪里宣布国家独立？","o":["默迪卡体育场","马六甲怡力操场","雪兰莪俱乐部操场","武吉加里尔国家体育场"],"a":0,"e":{zh:"默迪卡体育场。"}}],
+ "h736":[{q:"各族领袖组团赴伦敦谈判争取独立，体现了什么精神？","o":["协商精神","体育精神","革新精神","创业精神"],"a":0,"e":{zh:"协商精神。"}}],
+
+ /* ---------- 科学 Sains ---------- */
+ "s101":[{q:"蜜蜂、蚂蚁这类昆虫用什么器官呼吸？","o":["气孔","鳃","肺","皮肤"],"a":0,"e":{zh:"昆虫用气孔（气管）呼吸。"}}],
+ "s102":[{q:"金鱼、罗非鱼用什么器官呼吸？","o":["鳃","气孔","肺","皮肤"],"a":0,"e":{zh:"鱼用鳃呼吸。"}}],
+ "s103":[{q:"猫、牛这类哺乳动物用什么器官呼吸？","o":["肺","鳃","气孔","皮肤"],"a":0,"e":{zh:"哺乳类用肺呼吸。"}}],
+ "s104":[{q:"把动物分成「水生」和「陆生」，运用了哪项科学技能？","o":["分类","预测","假设","测量"],"a":0,"e":{zh:"按特征归类 = 分类。"}}],
+ "s105":[{q:"下列哪种动物和「鲤鱼」用相同的器官呼吸？","o":["鲨鱼","蟑螂","兔子","麻雀"],"a":0,"e":{zh:"鲤鱼和鲨鱼都是鱼，用鳃呼吸。"}}],
+ "s111":[{q:"测量一袋米的「质量」应使用？","o":["天平","卷尺","秒表","量筒"],"a":0,"e":{zh:"质量用天平测量。"}}],
+ "s112":[{q:"记录跑步用了多久（时间）应使用？","o":["秒表","天平","卷尺","温度计"],"a":0,"e":{zh:"时间用秒表测量。"}}],
+ "s113":[{q:"测量课室的「长度」应使用？","o":["卷尺","天平","量筒","秒表"],"a":0,"e":{zh:"长度用卷尺测量。"}}],
+ "s114":[{q:"量取 50 毫升的「液体」应使用？","o":["量筒","天平","卷尺","秒表"],"a":0,"e":{zh:"液体体积用量筒测量。"}}],
+ "s115":[{q:"电流能顺利通过、灯泡发亮的材料是？","o":["电导体","电的绝缘体","磁铁","酸性物质"],"a":0,"e":{zh:"能导电→灯亮→电导体。"}}],
+ "s116":[{q:"塑料尺接入电路后灯泡不亮，塑料尺是？","o":["电的绝缘体","电导体","磁铁","碱性物质"],"a":0,"e":{zh:"不导电→灯不亮→绝缘体。"}}],
+ "s121":[{q:"把蓝色石蕊试纸放入柠檬汁（酸性），试纸会变？","o":["红色","蓝色","绿色","无色"],"a":0,"e":{zh:"蓝色石蕊遇酸变红。"}}],
+ "s122":[{q:"把红色石蕊试纸放入肥皂水（碱性），试纸会变？","o":["蓝色","红色","黄色","黑色"],"a":0,"e":{zh:"红色石蕊遇碱变蓝。"}}],
+ "s123":[{q:"某溶液使蓝色石蕊试纸变红，它属于？","o":["酸性物质","碱性物质","中性物质","气体"],"a":0,"e":{zh:"使蓝色石蕊变红 → 酸性。"}}],
+ "s124":[{q:"某溶液使红色石蕊试纸变蓝，它属于？","o":["碱性物质","酸性物质","中性物质","固体"],"a":0,"e":{zh:"使红色石蕊变蓝 → 碱性。"}}],
+ "s125":[{q:"看到地面湿了，推测刚刚下过雨，这运用了哪项科学技能？","o":["推断","测量","沟通","分类"],"a":0,"e":{zh:"根据观察作出解释 = 推断。"}}],
+ "s201":[{q:"湿衣服晾在阳光下，过几小时后衣服会？","o":["变干（水分减少）","变得更湿","重量增加","结冰"],"a":0,"e":{zh:"水蒸发 → 衣服变干。"}}],
+ "s202":[{q:"把花生油滴入一杯水中，油会？","o":["浮在水面","沉到杯底","溶解消失","变成气体"],"a":0,"e":{zh:"油比水轻 → 浮在水面。"}}],
+ "s203":[{q:"把一颗石头放入水中，石头会？","o":["沉入水底","浮在水面","溶解","蒸发"],"a":0,"e":{zh:"石头密度比水大 → 沉底。"}}],
+ "s204":[{q:"根据天气预报推测明天会下雨，这是哪项科学技能？","o":["预测","观察","分类","测量"],"a":0,"e":{zh:"推测将发生的事 = 预测。"}}],
+ "s211":[{q:"跑步时和走路时相比，人的呼吸通常会？","o":["更快","更慢","不变","先快后停"],"a":0,"e":{zh:"活动越剧烈 → 呼吸率越高。"}}],
+ "s212":[{q:"同样的盐，哪种状态在水里溶解最快？","o":["细粉状","小颗粒","大块状","三者一样"],"a":0,"e":{zh:"表面积越大（粉状）→ 溶解越快。"}}],
+ "s213":[{q:"同样的冰糖，哪种状态溶解得最慢？","o":["大块状","粉状","颗粒状","一样快"],"a":0,"e":{zh:"表面积最小（块状）→ 溶解最慢。"}}],
+ "s214":[{q:"根据柱状图比较各班的人数，这运用了哪项科学技能？","o":["诠释资料","假设","观察","控制变数"],"a":0,"e":{zh:"读图表并解释 = 诠释资料。"}}],
+ "s221":[{q:"实验中「由研究者主动改变」的因素叫做？","o":["操纵性变数","反应性变数","固定性变数","无关变数"],"a":0,"e":{zh:"被改变的 = 操纵性变数。"}}],
+ "s222":[{q:"实验中「随操纵变数而改变、被测量出来」的结果叫做？","o":["反应性变数","操纵性变数","固定性变数","自由变数"],"a":0,"e":{zh:"被测量的结果 = 反应性变数。"}}],
+ "s223":[{q:"实验中「为公平而保持一样」的因素叫做？","o":["固定性变数","操纵性变数","反应性变数","随机变数"],"a":0,"e":{zh:"保持不变的 = 固定性变数。"}}],
+ "s224":[{q:"研究「肥料越多，植物长得越高」时，合适的假设是？","o":["肥料越多，植物长得越高","肥料越多，植物越矮","肥料不影响植物","植物高度与肥料无关"],"a":0,"e":{zh:"假设写成「越…越…」的因果。"}}],
+ "s225":[{q:"进行公平实验时，每一次只能改变？","o":["一个变数","两个变数","三个变数","所有变数"],"a":0,"e":{zh:"公平实验只改变一个变数。"}}],
+ "s226":[{q:"研究「水温对盐溶解快慢的影响」，操纵性变数是？","o":["水的温度","盐的分量","水的体积","搅拌时间"],"a":0,"e":{zh:"被改变的是水温 → 操纵性变数。"}}]
+};
+
+/* attach variants to items across every subject; fill ms/en from zh */
+(function(){
+ function zf(o){ if(o && o.zh){ if(!o.ms)o.ms=o.zh; if(!o.en)o.en=o.zh; } }
+ Object.keys(VARIANTS).forEach(id=>VARIANTS[id].forEach(v=>{ if(v.e) zf(v.e); }));
+ Object.keys(SUBJECT_COURSES).forEach(sid=>SUBJECT_COURSES[sid].forEach(m=>m.lessons.forEach(l=>(l.items||[]).forEach(it=>{
+  if(it.id && VARIANTS[it.id]) it.variants = VARIANTS[it.id];
+ }))));
+})();
+
 /* ---------- UI strings ---------- */
 const UI = {
  zh:{bmTitle:"Mini Build Mission",bmSub:"本课收官任务：连说 3–5 句关于你自己的话。不评分、不上传、没有标准答案——开口表达就是目标。",bmHint:"上面只是示范。请换成你自己的真实资料来说。",gfTitle:"推荐学习路径",gfSub:"系统建议按这个顺序学习本模块：",gfFree:"你也可以现在就探索这一关——学习的自由在你手上。",gfBack:"返回",gfBossLocked:"👑 Boss 是阶段毕业战：完成本模块第 1–4 关后自动解锁。",continue:"Continue",check:"Check",start:"Start",resume:"Resume",startLesson:"Start Lesson",correct:"Correct!",wrong:"Not quite",answerIs:"Correct answer:",vocab:"Vocabulary",patterns:"Sentence Patterns",fill:"Fill in the Blank",sub:"Substitution",order:"Word Order",trans:"Translation",mcq:"Multiple Choice",dialog:"Dialogue",boss:"BOSS CHALLENGE",lessonDone:"Lesson Complete!",bossDone:"Boss Defeated!",resSub:"Lesson complete. Next lesson unlocked.",accuracy:"Accuracy",locked:"Locked",done:"Done",go:"In progress",new:"Start",lesson:"Lesson",lessonU:"",module:"Module",bonus:"Completion bonus",bossBonus:"Boss bonus",heroNew:"Start your English journey here.",heroCont:"Continue where you left off.",allDone:"Congratulations! You finished the whole Level 1! 🎉",step:"Step",sceneLbl:"Scene",you:"You",changeLang:"Change explanation language?",menuTitle:"Menu",cancel:"Close",saveLocal:"Save to Device",quitYes:"Quit",quitNo:"Keep Learning",soundOn:"🔊 Sound on",soundOff:"🔇 Sound off",reviewLbl:"Today's Review",reviewN:"{n} questions to review",reviewNow:"Review",allCaught:"All caught up 🎉",noReview:"No review needed right now.",reviewDone:"Review Complete!",clearedMsg:"{c} cleared · {r} still to review.",reviewAgain:"Keep Reviewing",mistakes:"Mistakes to Review",praise:["Correct!","Excellent!","Great job!","Perfect!","Keep it up!"],combo:"Combo",nextUp:"Next",backHome:"Home",dailyGoal:"Daily Goal",goalDone:"🎉 Daily goal reached!",courseProg:"Course Progress",streakMile:"🔥 {n} days in a row! Amazing!",navHome:"Map",navProfile:"Profile",achTitle:"Achievements",statLessons:"Lessons",statStreak:"Day Streak",student:"Murid",editName:"Edit name",saveName:"Save",cpSub:"Level 1 · Construct",startFlag:"START HERE",toNext:"{n} XP to Lv {lv}",listen:"Listening Match",meaningIs:"Meaning:",nlTag:"Next Level",nlLocked:"Locked · {n}/25 lessons",nlSoon:"Coming soon 🎉",obTitle:"Welcome! 👋",obSkip:"Skip",speakTitle:"Speak Up",record:"Record",stopBtn:"Stop",play:"Play",tryAgain:"Try Again",speakSay:"Say this sentence:",recState:"Recording…",getReady:"Get ready…",speakNow:"Speak now!",saving:"Saving…",vocabSub:"先认读这些单词，再继续。",tapSpk:"点喇叭按钮听单词发音；点选词块时也会自动朗读。",patternsSub:"___ 是可替换的位置。",fillSub:"选出正确的词。",subSub:"点选一个词，替换进句型。",subBuilt:"很好！你造了这个句子：",orderSub:"点击单词，排出正确顺序。",transSub:"把句子翻译成英文（点词组句）。",mcqSub:"选出最合适的答案。",dialogSub:"点词组句，完成你的台词。",bossSub:"无提示！靠自己完成对话。",reviewFrom:"来自你之前做错的题目，答对后会从这里移除。",quit:"退出本关？本关进度不会保存。",menuSub:"切换解释语言，或把进度保存到本设备（进度也会自动保存）。记住每道题的重点，考试时就更容易复盘。",saved:"✓ 已保存到本设备（刷新后会恢复）",savedMem:"已保存到本次会话（此浏览器不支持本地存储）",listenSub:"点喇叭听发音，再点对应的英文单词，把它们配对。",nlDesc:"Level 2 · Convey：学会清楚传达完整信息——讲述经历、说明原因、表达感受和计划，把句子连成自然的小段落。",nlToastLocked:"完成全部 25 关即可解锁 Level 2。继续加油！",nlToastSoon:"🎉 你已完成 Level 1！Level 2 (Convey) 正在制作中，敬请期待。",obSub:"我们要怎么称呼你？你的名字会出现在练习里（例如 My name is …），之后也可以在 Profile 里修改。",obHello:"你好，{name}！",listenMuted:"声音已关闭，本听力练习已跳过。想练听力可在右上角打开声音。",speakSub:"先开口说，再听听自己的声音；想重来就再录一次。不评分、不上传，录音只保存在你自己的设备里。",speakDenied:"无法使用麦克风（可能未授权）。没关系，点 Continue 继续，不影响通关。",speakSaved:"✓ 已录好，保存在本机。点 Play 听听自己的发音！",speakSavedHint:"找到你上次的录音了，点 Play 可以回听，或再录一次。",speakWaitHint:"按 Record 后先别说话——看到 “Speak now” 再开始说，录音会更完整。"},
@@ -1539,7 +1700,7 @@ const EXAM_UI = {
   reportBtn:"📋 Laporan Kemajuan Saya", reportTitle:"Laporan Kemajuan",
   repThisLesson:"Pencapaian kamu kali ini", repCorrect:"Jawapan betul", repAcc:"Ketepatan", repXPGain:"XP diperoleh", repWritingDone:"Cabaran penulisan selesai!",
   repLearned:"Apa yang kamu pelajari", repJourney:"Perjalanan kamu setakat ini", repLessons:"Pelajaran selesai", repTotalXP:"Jumlah XP", repStreakDays:"Hari berturut-turut", repClose:"Teruskan",
-  resetBtn:"🔄 Mula Semula", resetTitle:"Mula semula?", resetMsg:"Semua kemajuan (XP, lencana, pelajaran selesai dan kesalahan) akan dipadamkan. Nama dan bahasa kekal. Tindakan ini tidak boleh dibuat asal.", resetYes:"Ya, mula semula", resetNo:"Batal", subjectTitle:"Pilih subjek", resetPick:"Pilih skop untuk ditetapkan semula:", resetAll:"Mula semula semua", resetMsgOne:"Kemajuan & laporan bab ini akan dipadam; senarai ulang kaji dikekalkan. Tidak boleh dibuat asal.", parentBtn:"📄 Laporan Ibu Bapa", parentTitle:"Laporan Ibu Bapa", parentNoWrong:"Hebat! Tiada jawapan salah dalam bab ini 🎉", parentSummary:"{n} soalan salah dalam bab ini ({f} telah dibetulkan).", parentWrongHd:"Soalan yang dijawab salah", parentFixed:"Dibetulkan", parentTodo:"Perlu ulang kaji", parentNote:"Soalan ini ada dalam senarai ulang kaji untuk latihan berulang.",
+  resetBtn:"🔄 Mula Semula", resetTitle:"Mula semula?", resetMsg:"Semua kemajuan (XP, lencana, pelajaran selesai dan kesalahan) akan dipadamkan. Nama dan bahasa kekal. Tindakan ini tidak boleh dibuat asal.", resetYes:"Ya, mula semula", resetNo:"Batal", subjectTitle:"Pilih subjek", resetPick:"Pilih skop untuk ditetapkan semula:", resetAll:"Mula semula semua", resetMsgOne:"Kemajuan & laporan bab ini akan dipadam; senarai ulang kaji dikekalkan. Tidak boleh dibuat asal.", parentBtn:"📄 Laporan Ibu Bapa", parentTitle:"Laporan Ibu Bapa", parentNoWrong:"Hebat! Tiada jawapan salah dalam bab ini 🎉", parentSummary:"{n} soalan salah dalam bab ini ({f} telah dibetulkan).", parentWrongHd:"Soalan yang dijawab salah", parentFixed:"Dibetulkan", parentTodo:"Perlu ulang kaji", parentNote:"Soalan ini ada dalam senarai ulang kaji untuk latihan berulang.", parentPrint:"🖨️ Cetak / Simpan PDF", parentKicker:"Laporan Pencapaian", parentChapter:"Bab", parentStudent:"Murid", parentDate:"Tarikh", parentStatWrong:"Salah", parentSign:"Tandatangan ibu bapa / guru",
   repCheerHigh:"Hebat sungguh, {name}! Kamu semakin pandai!", repCheerMid:"Bagus, {name}! Setiap latihan buat kamu lebih hebat!", repCheerStart:"Syabas, {name}! Kamu sudah melangkah maju!", recapHi:"Hebat! Ingat poin ini, mesti boleh nanti!",
   cpSub:"UPSA · Tahun 5",
   passage:"Petikan", passageSub:"Baca petikan dengan teliti, kemudian jawab soalan.",
@@ -1560,7 +1721,7 @@ const EXAM_UI = {
   reportBtn:"📋 我的进步报告", reportTitle:"进步报告",
   repThisLesson:"这一关你的表现", repCorrect:"答对题数", repAcc:"正确率", repXPGain:"获得 XP", repWritingDone:"完成了写作挑战！",
   repLearned:"你学会了", repJourney:"你的学习旅程", repLessons:"已完成关卡", repTotalXP:"总 XP", repStreakDays:"连续学习天数", repClose:"继续",
-  resetBtn:"🔄 重新开始", resetTitle:"要重新开始吗？", resetMsg:"所有进度（XP、徽章、已完成关卡和错题）都会清空。名字和语言会保留。此操作无法撤销。", resetYes:"是的，全部重做", resetNo:"取消", subjectTitle:"选择科目", resetPick:"选择要重置的范围：", resetAll:"全部重新开始", resetMsgOne:"此章节的进度与家长报告会清空；错题本保留。无法撤销。", parentBtn:"📄 家长报告", parentTitle:"家长报告", parentNoWrong:"太棒了！本章节没有答错的题目 🎉", parentSummary:"本章节答错 {n} 题（已订正 {f} 题）。", parentWrongHd:"答错的题目", parentFixed:"已订正", parentTodo:"待复习", parentNote:"这些题目已收进错题本，可在首页点「错题本」反复练习。",
+  resetBtn:"🔄 重新开始", resetTitle:"要重新开始吗？", resetMsg:"所有进度（XP、徽章、已完成关卡和错题）都会清空。名字和语言会保留。此操作无法撤销。", resetYes:"是的，全部重做", resetNo:"取消", subjectTitle:"选择科目", resetPick:"选择要重置的范围：", resetAll:"全部重新开始", resetMsgOne:"此章节的进度与家长报告会清空；错题本保留。无法撤销。", parentBtn:"📄 家长报告", parentTitle:"家长报告", parentNoWrong:"太棒了！本章节没有答错的题目 🎉", parentSummary:"本章节答错 {n} 题（已订正 {f} 题）。", parentWrongHd:"答错的题目", parentFixed:"已订正", parentTodo:"待复习", parentNote:"这些题目已收进错题本，可在首页点「错题本」反复练习。", parentPrint:"🖨️ 打印 / 存 PDF", parentKicker:"学习成绩报告", parentChapter:"章节", parentStudent:"学生", parentDate:"日期", parentStatWrong:"答错", parentSign:"家长 / 老师签名",
   repCheerHigh:"太厉害了，{name}！你越来越聪明了！", repCheerMid:"做得好，{name}！每次练习都让你更棒！", repCheerStart:"加油，{name}！你已经向前迈进了一步！", recapHi:"太棒了！记住这几点，下次准没错！",
   cpSub:"UPSA · 五年级",
   passage:"阅读篇章", passageSub:"仔细阅读以下篇章，然后作答。",
@@ -1581,7 +1742,7 @@ const EXAM_UI = {
   reportBtn:"📋 My Progress Report", reportTitle:"Progress Report",
   repThisLesson:"How you did this time", repCorrect:"Correct answers", repAcc:"Accuracy", repXPGain:"XP earned", repWritingDone:"Writing challenge done!",
   repLearned:"What you learned", repJourney:"Your journey so far", repLessons:"Lessons done", repTotalXP:"Total XP", repStreakDays:"Day streak", repClose:"Continue",
-  resetBtn:"🔄 Start Over", resetTitle:"Start over?", resetMsg:"All progress (XP, badges, completed lessons and mistakes) will be cleared. Name and language are kept. This cannot be undone.", resetYes:"Yes, start over", resetNo:"Cancel", subjectTitle:"Choose subject", resetPick:"Choose what to reset:", resetAll:"Reset everything", resetMsgOne:"This chapter's progress & parent report will be cleared; the review list is kept. Cannot be undone.", parentBtn:"📄 Parent Report", parentTitle:"Parent Report", parentNoWrong:"Great! No wrong answers in this chapter 🎉", parentSummary:"{n} wrong in this chapter ({f} now corrected).", parentWrongHd:"Questions answered wrongly", parentFixed:"Corrected", parentTodo:"To review", parentNote:"These are saved in the review list for extra practice.",
+  resetBtn:"🔄 Start Over", resetTitle:"Start over?", resetMsg:"All progress (XP, badges, completed lessons and mistakes) will be cleared. Name and language are kept. This cannot be undone.", resetYes:"Yes, start over", resetNo:"Cancel", subjectTitle:"Choose subject", resetPick:"Choose what to reset:", resetAll:"Reset everything", resetMsgOne:"This chapter's progress & parent report will be cleared; the review list is kept. Cannot be undone.", parentBtn:"📄 Parent Report", parentTitle:"Parent Report", parentNoWrong:"Great! No wrong answers in this chapter 🎉", parentSummary:"{n} wrong in this chapter ({f} now corrected).", parentWrongHd:"Questions answered wrongly", parentFixed:"Corrected", parentTodo:"To review", parentNote:"These are saved in the review list for extra practice.", parentPrint:"🖨️ Print / Save PDF", parentKicker:"Learning Report", parentChapter:"Chapter", parentStudent:"Student", parentDate:"Date", parentStatWrong:"Wrong", parentSign:"Parent / Teacher signature",
   repCheerHigh:"Amazing, {name}! You're getting smarter!", repCheerMid:"Well done, {name}! Every practice makes you stronger!", repCheerStart:"Great job, {name}! You've taken a step forward!", recapHi:"Awesome! Remember these and you've got it!",
   cpSub:"UPSA · Year 5",
   passage:"Passage", passageSub:"Read the passage carefully, then answer.",
@@ -2095,7 +2256,7 @@ function resolveRef(r){
  const id = (typeof r==="string") ? r : (r && r.id);
  const e = id && QINDEX[id];
  if(!e) return null;
- return {kind:e.kind, it:e.it, id:id, passage:e.passage||null};
+ const piv=pickVariant(e.it); return {kind:e.kind, it:piv, id:id, passage:e.passage||null};
 }
 function startReview(){
  const refs = S.review.slice(0,10);
@@ -2115,7 +2276,7 @@ function startLesson(mi,li){
   if(l.draw && l.draw < items.length) items = shuffle(items).slice(0, l.draw);
   const steps = [];
   if(l.passage) steps.push({kind:"passage", p:l.passage});
-  items.forEach(it=>steps.push({kind:it.kind, it:it, id:it.id, passage:l.passage||null}));
+  items.forEach(it=>{ const piv=pickVariant(it); steps.push({kind:piv.kind, it:piv, id:it.id, passage:l.passage||null}); });
   if(l.recap && l.recap.length) steps.push({kind:"recap", r:l.recap});
   P = {mi,li,steps,idx:0,xp:0,right:0,total:0,wrongs:[],combo:0,mode:"lesson"};
   $("combochip").classList.add("hidden");
@@ -2214,42 +2375,55 @@ function startLesson(mi,li){
   if(all) all.onclick=()=>confirmReset(t.resetAll, t.resetMsg, resetProgress);
   o.querySelectorAll(".rst-row[data-mi]").forEach(b=>{ b.onclick=()=>{ const mi=+b.dataset.mi; confirmReset(tri(COURSE[mi].title), t.resetMsgOne, ()=>resetModule(mi)); }; });
  }
- /* per-chapter PARENT report: what the child got wrong across the whole chapter */
+ /* per-chapter PARENT report — formal, printable, teacher-friendly */
  function showParentReport(mid){
   const t = T();
   const m = COURSE.find(x=>x.id===mid) || COURSE[0];
   const log = (S.mwrong && S.mwrong[mid]) || {};
   const entries = Object.keys(log).map(k=>log[k]);
-  const wrongCount = entries.length, fixedCount = entries.filter(e=>e.fixed).length;
-  const nm = (S.name||"").trim();
+  const wrong = entries.length, fixed = entries.filter(e=>e.fixed).length, todo = wrong - fixed;
+  const nm = (S.name||"").trim() || "—";
   const date = new Date().toLocaleDateString();
   let body;
-  if(!wrongCount){
+  if(!wrong){
    body = `<div class="par-none">${esc(t.parentNoWrong)}</div>`;
   } else {
-   const list = entries.map(e=>`<div class="par-item${e.fixed?' fixed':''}">`
-     + `<div class="par-q">${esc(e.q)}</div>`
+   const stats = `<div class="par-stats">`
+     + `<div class="par-stat"><b>${wrong}</b><span>${esc(t.parentStatWrong)}</span></div>`
+     + `<div class="par-stat ok"><b>${fixed}</b><span>${esc(t.parentFixed)}</span></div>`
+     + `<div class="par-stat todo"><b>${todo}</b><span>${esc(t.parentTodo)}</span></div>`
+     + `</div>`;
+   const list = entries.map((e,i)=>`<div class="par-item${e.fixed?' fixed':''}">`
+     + `<div class="par-q"><span class="par-num">${i+1}</span>${esc(e.q)}</div>`
      + `<div class="par-a">✓ ${esc(t.answerIs)} ${esc(e.a)}</div>`
      + (e.x?`<div class="par-x">${esc(e.x)}</div>`:``)
      + `<div class="par-meta"><span class="par-lt">${esc(e.lt||"")}</span><span class="par-st ${e.fixed?'ok':'todo'}">${e.fixed?esc(t.parentFixed):esc(t.parentTodo)}</span></div>`
      + `</div>`).join("");
-   body = `<div class="par-sum">${esc(t.parentSummary.replace("{n}",wrongCount).replace("{f}",fixedCount))}</div>`
-     + `<div class="par-hd">${esc(t.parentWrongHd)}</div><div class="par-list">${list}</div>`
+   body = stats + `<div class="par-hd">${esc(t.parentWrongHd)}</div><div class="par-list">${list}</div>`
      + `<div class="par-note">${esc(t.parentNote)}</div>`;
   }
   const html = `<div class="par-card">`
-    + `<button class="rep-x" id="parx" aria-label="close">✕</button>`
-    + `<div class="par-h-ic">📄</div>`
-    + `<h2 class="par-title">${esc(t.parentTitle)}</h2>`
-    + `<div class="par-sub">${esc(tri(m.title))}${nm?" · "+esc(nm):""} · ${esc(date)}</div>`
+    + `<button class="rep-x noprint" id="parx" aria-label="close">✕</button>`
+    + `<div class="par-head"><div class="par-h-ic">📄</div>`
+    +   `<h2 class="par-title">${esc(t.parentTitle)}</h2>`
+    +   `<div class="par-kicker">${esc(t.parentKicker)}</div></div>`
+    + `<div class="par-meta-top">`
+    +   `<div><span class="pk">${esc(t.parentChapter)}</span><b>${esc(tri(m.title))}</b></div>`
+    +   `<div><span class="pk">${esc(t.parentStudent)}</span><b>${esc(nm)}</b></div>`
+    +   `<div><span class="pk">${esc(t.parentDate)}</span><b>${esc(date)}</b></div>`
+    + `</div>`
     + body
-    + `<button class="btn btn-primary btn-block" id="pargo" style="margin-top:16px">${esc(t.repClose)}</button>`
-    + `</div>`;
-  const o=document.createElement("div"); o.className="rep-ovl"; o.innerHTML=html;
+    + `<div class="par-sign"><span>${esc(t.parentSign)}</span><div class="par-sign-line"></div></div>`
+    + `<div class="par-actions noprint">`
+    +   `<button class="btn btn-ghost btn-block" id="parprint">${esc(t.parentPrint)}</button>`
+    +   `<button class="btn btn-primary btn-block" id="pargo" style="margin-top:10px">${esc(t.repClose)}</button>`
+    + `</div></div>`;
+  const o=document.createElement("div"); o.className="rep-ovl par-ovl"; o.innerHTML=html;
   o.addEventListener("click",e=>{ if(e.target===o) o.remove(); });
   document.body.appendChild(o);
   o.querySelector("#parx").onclick=()=>o.remove();
   o.querySelector("#pargo").onclick=()=>o.remove();
+  const pr=o.querySelector("#parprint"); if(pr) pr.onclick=()=>{ try{ window.print(); }catch(e){} };
  }
  /* subject switcher: each subject is an independent "game" (own content + progress) */
  function subjectSheet(){

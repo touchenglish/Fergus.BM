@@ -1737,6 +1737,141 @@ const VARIANTS = {
  }))));
 })();
 
+/* ============================================================
+   科学 · 第三章「科学探究综合应用」(sci3)
+   题目取自考卷 B 组 / C 组 KBAT 进阶题：操作性定义、在真实实验中
+   辨认变数、控制变数方法、公平实验判断、假设与结论。
+   科学属规则/技能类 → 变体用不同实验情境训练同一技能（防死记）。
+   ============================================================ */
+(function(){
+ const M = {
+  id:"sci3",
+  title:{zh:"科学探究综合应用"},
+  lessons:[
+   { type:"grammar", t:{zh:"辨认变数（应用）"}, draw:4,
+     recap:[{ic:"🔬", zh:"变数三兄弟：操纵性变数=我「主动改变」的；反应性变数=我「测量到的结果」；固定性变数=「保持一样」的。"}],
+     items:[
+      {kind:"mcq", id:"sci301", q:"在「布料吸水能力」的实验中，「操纵性变数」是什么？", o:["布料的种类","量筒里剩下的水的体积","水的温度","浸泡的时间"], a:0, e:{zh:"我们主动改变的是布料的种类 → 操纵性变数。"}},
+      {kind:"mcq", id:"sci302", q:"在同一个「布料吸水」实验中，「反应性变数」是什么？", o:["量筒里剩下的水的体积","布料的种类","布料的面积","水的颜色"], a:0, e:{zh:"被测量出来的结果是剩下的水的体积 → 反应性变数。"}},
+      {kind:"mcq", id:"sci303", q:"在「甘油泡泡」实验中，「固定性变数」是什么？", o:["每个容器里肥皂水的体积","甘油的分量","泡泡保持不破的时间","容器的形状"], a:0, e:{zh:"保持一样的是肥皂水的体积 → 固定性变数。"}},
+      {kind:"mcq", id:"sci304", q:"在「糖溶解快慢」实验中，「反应性变数」是什么？", o:["糖完全溶解所需的时间","糖的状态","水的体积","水的温度"], a:0, e:{zh:"被测量的结果是溶解所需的时间 → 反应性变数。"}},
+      {kind:"mcq", id:"sci305", q:"在「铝罐影子大小」实验中，被「改变」的（操纵性变数）是什么？", o:["铝罐与光源之间的距离","影子的大小","铝罐的种类","光源的方向"], a:0, e:{zh:"主动改变的是铝罐与光源的距离 → 操纵性变数。"}}
+     ]},
+   { type:"grammar", t:{zh:"操作性定义 · 控制变数 · 沟通"}, draw:4,
+     recap:[{ic:"📝", zh:"操作性定义格式=「(要做的事)，根据(要观察的事)来确定(科学原理)」；把结果做成表格清楚呈现给他人=沟通。"}],
+     items:[
+      {kind:"mcq", id:"sci311", q:"「操作性定义」的正确写法格式是？", o:["（要做的事），根据（要观察的事）来确定（科学原理）","只写出实验的结论","只写出一个假设","只画出实验的图"], a:0, e:{zh:"操作性定义 = 做什么 + 看什么 → 确定什么。"}},
+      {kind:"mcq", id:"sci312", q:"判断布料「吸水能力」的强弱，应根据什么来确定？", o:["量筒里剩下的水的体积","布料的颜色","布料的价钱","浸泡的次数"], a:0, e:{zh:"用剩下的水的体积来判断吸水能力。"}},
+      {kind:"mcq", id:"sci313", q:"在「铝罐影子」实验中，要正确「控制操纵性变数」，应该怎么做？", o:["改变铝罐与光源之间的距离","把铝罐换成其他物体","用不同方式摆放铝罐","让光源从不同方向照射"], a:0, e:{zh:"操纵性变数是距离 → 通过改变距离来控制它。"}},
+      {kind:"mcq", id:"sci314", q:"在「糖溶解」实验中，控制操纵性变数（糖的状态）的方法是？", o:["分别准备粉状、颗粒状和方块状的糖","用不同体积的水","用不同温度的水","搅拌不同的时间"], a:0, e:{zh:"改变糖的状态 → 准备三种不同状态的糖。"}},
+      {kind:"mcq", id:"sci315", q:"把实验结果填入表格、清楚地呈现给他人，运用了哪项科学技能？", o:["沟通","假设","观察","控制变数"], a:0, e:{zh:"用表格/图清楚传达资料 = 沟通。"}}
+     ]},
+   { type:"grammar", t:{zh:"公平实验 · 假设 · 结论（Boss）"}, draw:4, boss:true,
+     recap:[{ic:"⚖️", zh:"公平实验=只有「一个」操纵性变数；结论写成「越…越…」，并要用实验数据来支持。"}],
+     items:[
+      {kind:"mcq", id:"sci321", q:"「甘油泡泡」实验只有一个操纵性变数（甘油的分量），所以这是一项？", o:["公平的实验","不公平的实验","错误的实验","无法判断的实验"], a:0, e:{zh:"只有一个操纵性变数 → 公平实验。"}},
+      {kind:"mcq", id:"sci322", q:"为什么「甘油泡泡」实验是公平的？", o:["因为它只有一个操纵性变数","因为它有很多操纵性变数","因为它没有固定性变数","因为它改变了所有条件"], a:0, e:{zh:"公平实验 = 只改变一个变数。"}},
+      {kind:"mcq", id:"sci323", q:"实验结果：甘油1匙→4分钟、2匙→8分钟、3匙→12分钟。可作出的结论是？", o:["甘油的分量越多，泡泡保持不破的时间越长","甘油的分量越多，泡泡越快破","甘油的分量不影响泡泡","泡泡的时间与甘油无关"], a:0, e:{zh:"数据显示甘油越多、时间越长。"}},
+      {kind:"mcq", id:"sci324", q:"要用数据支持「甘油越多、泡泡越持久」这个结论，应引用哪一项？", o:["甘油3匙时，泡泡保持不破的时间最长（12分钟）","甘油1匙时泡泡最持久","各分量的时间都一样","甘油越多泡泡越快破"], a:0, e:{zh:"用最长时间(3匙=12分钟)来支持结论。"}},
+      {kind:"mcq", id:"sci325", q:"糖溶解结果：粉状10秒、颗粒30秒、方块90秒。说明糖的颗粒越小（表面积越大），溶解得？", o:["越快","越慢","不变","先快后慢"], a:0, e:{zh:"表面积越大 → 溶解越快(粉状最快)。"}}
+     ]}
+  ]
+ };
+
+ const V = {
+  "sci301":[{q:"研究「水温对盐溶解快慢」的影响，操纵性变数是？", o:["水的温度","盐溶解所需的时间","盐的分量","水的体积"], a:0, e:{zh:"主动改变的是水温 → 操纵性变数。"}}],
+  "sci302":[{q:"研究「斜面高度对小车滑行距离」，反应性变数是？", o:["小车滑行的距离","斜面的高度","小车的重量","斜面的材料"], a:0, e:{zh:"被测量的是滑行距离 → 反应性变数。"}}],
+  "sci303":[{q:"在「布料吸水」实验中，下列哪项应保持一样（固定性变数）？", o:["浸泡的时间","布料的种类","量筒里剩下的水的体积","布料的吸水能力"], a:0, e:{zh:"保持一样的是浸泡时间 → 固定性变数。"}}],
+  "sci304":[{q:"研究「水温对盐溶解快慢」，反应性变数是？", o:["盐完全溶解所需的时间","水的温度","盐的分量","水的体积"], a:0, e:{zh:"被测量的是溶解时间 → 反应性变数。"}}],
+  "sci305":[{q:"研究「斜面高度对小车滑行距离」，操纵性变数是？", o:["斜面的高度","小车滑行的距离","小车的重量","斜面的长度"], a:0, e:{zh:"主动改变的是斜面高度 → 操纵性变数。"}}],
+  "sci311":[{q:"一个完整的「操作性定义」必须包含哪三部分？", o:["要做的事、要观察的事、要确定的原理","只要结论","只要一张图表","只要一个假设"], a:0, e:{zh:"做什么 + 看什么 → 确定什么。"}}],
+  "sci312":[{q:"要判断海绵「吸水能力」的强弱，可以根据什么？", o:["海绵吸走的水的体积","海绵的颜色","海绵的价钱","海绵的形状"], a:0, e:{zh:"用吸走的水的体积来判断吸水能力。"}}],
+  "sci313":[{q:"研究「水温对溶解快慢」，要控制操纵性变数，应该怎么做？", o:["用不同温度的水来做实验","用不同分量的盐","用不同体积的水","搅拌不同的时间"], a:0, e:{zh:"操纵性变数是水温 → 用不同水温来做。"}}],
+  "sci314":[{q:"研究「斜面高度对滑行距离」，控制操纵性变数的方法是？", o:["让小车从不同高度的斜面滑下","用不同重量的小车","用不同材料的斜面","改变斜面的长度"], a:0, e:{zh:"改变斜面高度 → 从不同高度滑下。"}}],
+  "sci315":[{q:"把观察结果画成柱状图，与同学分享，运用了哪项科学技能？", o:["沟通","预测","假设","控制变数"], a:0, e:{zh:"清楚传达资料 = 沟通。"}}],
+  "sci321":[{q:"一项实验同时改变了两个操纵性变数，它是？", o:["不公平的实验","公平的实验","正确的实验","完美的实验"], a:0, e:{zh:"公平实验只能有一个操纵性变数。"}}],
+  "sci322":[{q:"怎样才算一项「公平的实验」？", o:["只改变一个变数，其余保持不变","同时改变很多变数","不控制任何变数","随意改变所有条件"], a:0, e:{zh:"只改变一个变数，其余固定。"}}],
+  "sci323":[{q:"盐溶解实验显示水温越高盐溶解越快。结论应写成？", o:["水温越高，盐溶解得越快","水温越高，盐溶解得越慢","水温不影响溶解","盐越多溶解越快"], a:0, e:{zh:"结论写成「越…越…」。"}}],
+  "sci324":[{q:"要用数据支持「水温越高、溶解越快」，应引用哪一项？", o:["水温最高时，盐溶解所需的时间最短","水温最低时溶解最快","各温度的时间相同","水温不影响时间"], a:0, e:{zh:"用最短时间(水温最高)支持结论。"}}],
+  "sci325":[{q:"把同样的盐磨成更细的粉末，它在水里会溶解得？", o:["更快","更慢","一样","不会溶解"], a:0, e:{zh:"颗粒越小、表面积越大 → 溶解越快。"}}]
+ };
+
+ // zh-fill ms/en across the new module + variants
+ function zf(o){ if(o && typeof o==="object" && o.zh){ if(!o.ms)o.ms=o.zh; if(!o.en)o.en=o.zh; } }
+ zf(M.title);
+ M.lessons.forEach(l=>{ zf(l.t); (l.recap||[]).forEach(zf); (l.items||[]).forEach(it=>{ zf(it.e); }); });
+ Object.keys(V).forEach(id=>V[id].forEach(v=>zf(v.e)));
+ // attach variants to the module items
+ M.lessons.forEach(l=>(l.items||[]).forEach(it=>{ if(V[it.id]) it.variants=V[it.id]; }));
+ // register chapter 3
+ SUBJECT_COURSES.sci.push(M);
+})();
+
+/* ============================================================
+   BM 量词(penjodoh) — 华小五年级考试型：句子语境 + 进阶量词
+   每个 set 语法关 3 题，每题 1 变体(同量词、不同名词/语境)。
+   只用高把握的标准搭配；draw 显示全部。
+   ============================================================ */
+(function(){
+ const E = {
+  bilah:{ms:"Benda yang ada mata tajam (parang, pisau) guna 'bilah'.",zh:"有刀刃的工具（parang、pisau）用 bilah。",en:"Bladed tools use 'bilah'."},
+  kuntum:{ms:"Bunga guna 'kuntum'.",zh:"花的量词用 kuntum。",en:"Flowers use 'kuntum'."},
+  utas:{ms:"Benda berbentuk rantai/tali guna 'utas'.",zh:"链状/绳状物（rantai、tali）用 utas。",en:"Chains and strings use 'utas'."},
+  pucuk:{ms:"Surat guna 'pucuk'.",zh:"信件用 pucuk。",en:"Letters use 'pucuk'."},
+  butir:{ms:"Benda kecil berbutir (beras, mutiara) guna 'butir'.",zh:"细小颗粒（米、珍珠）用 butir。",en:"Small grains use 'butir'."},
+  potong:{ms:"Hirisan (kek, roti) guna 'potong'.",zh:"切片（蛋糕、面包）用 potong。",en:"Slices use 'potong'."},
+  ulas:{ms:"Isi buah berulas (durian, limau) guna 'ulas'.",zh:"果瓣（榴莲、橘子）用 ulas。",en:"Fruit segments use 'ulas'."},
+  ketul:{ms:"Bongkah/ketulan (gula, batu) guna 'ketul'.",zh:"块状物（糖块、石头）用 ketul。",en:"Lumps/chunks use 'ketul'."},
+  bidang:{ms:"Kawasan luas (tanah, sawah) guna 'bidang'.",zh:"大片土地/田地用 bidang。",en:"Large areas of land use 'bidang'."},
+  sikat:{ms:"Sesusun pisang guna 'sikat'.",zh:"一梳香蕉用 sikat。",en:"A comb of bananas uses 'sikat'."},
+  patah:{ms:"Kata/perkataan guna 'patah'.",zh:"词/字（几个字）用 patah。",en:"Words use 'patah'."},
+  naskhah:{ms:"Akhbar/majalah guna 'naskhah'.",zh:"报章/杂志用 naskhah。",en:"Newspapers and magazines use 'naskhah'."}
+ };
+ const it = (id,q,o,e,vq,vo,ve) => ({ kind:"mcq", id, q, o, a:0, e, variants:[{q:vq, o:vo, a:0, e:ve||e}] });
+
+ const NEW = {
+  set1:[
+   it("s1pj1","Pak Hassan mengasah ___ parang sebelum ke ladang getah.",["bilah","batang","buah","keping"],E.bilah,
+       "Tukang masak menggunakan ___ pisau untuk memotong sayur.",["bilah","batang","keping","biji"],E.bilah),
+   it("s1pj2","Mei Ling menyematkan ___ bunga ros di rambutnya.",["kuntum","helai","biji","keping"],E.kuntum,
+       "___ bunga raya mekar dengan indah di halaman rumah.",["kuntum","helai","biji","batang"],E.kuntum),
+   it("s1pj3","Nenek menyimpan ___ rantai emas di dalam laci.",["utas","biji","batang","keping"],E.utas,
+       "Dia mengikat kotak itu dengan ___ tali yang kuat.",["utas","batang","helai","keping"],E.utas)
+  ],
+  set2:[
+   it("s2pj1","Aminah menulis ___ surat untuk neneknya di kampung.",["pucuk","keping","helai","batang"],E.pucuk,
+       "Dia menghantar ___ surat itu melalui pos laju.",["pucuk","keping","helai","batang"],E.pucuk),
+   it("s2pj2","Gadis itu tidak membazirkan walau ___ beras pun.",["butir","biji","ketul","keping"],E.butir,
+       "___ mutiara itu sangat mahal harganya.",["butir","biji","ketul","keping"],E.butir),
+   it("s2pj3","Ibu menghidangkan ___ kek coklat kepada tetamu.",["potong","keping","biji","buah"],E.potong,
+       "Adik makan ___ roti bakar dengan jem strawberi.",["potong","keping","biji","ketul"],E.potong)
+  ],
+  set3:[
+   it("s3pj1","Adik makan ___ durian yang manis itu dengan lahap.",["ulas","biji","buah","ketul"],E.ulas,
+       "Dia menghisap ___ limau yang masam sehingga muka berkerut.",["ulas","biji","buah","ketul"],E.ulas),
+   it("s3pj2","Pak Cik memasukkan ___ gula ke dalam cawan tehnya.",["ketul","biji","butir","keping"],E.ketul,
+       "Budak nakal itu membaling ___ batu ke dalam sungai.",["ketul","biji","butir","keping"],E.ketul),
+   it("s3pj3","Datuk mewarisi ___ tanah yang luas di kampung.",["bidang","keping","buah","batang"],E.bidang,
+       "Petani itu mengusahakan ___ sawah padi setiap musim.",["bidang","keping","buah","batang"],E.bidang)
+  ],
+  set4:[
+   it("s4pj1","Emak menggantung ___ pisang emas di dapur.",["sikat","biji","batang","kuntum"],E.sikat,
+       "Penjual itu menyusun ___ pisang di atas meja gerai.",["sikat","biji","batang","buah"],E.sikat),
+   it("s4pj2","Dia tidak berkata walau ___ kata pun ketika dimarahi.",["patah","baris","keping","biji"],E.patah,
+       "Tuliskan jawapan dalam beberapa ___ perkataan sahaja.",["patah","baris","keping","biji"],E.patah),
+   it("s4pj3","Ayah membaca ___ akhbar sambil menikmati kopi pagi.",["naskhah","helai","keping","batang"],E.naskhah,
+       "Perpustakaan itu menyimpan banyak ___ majalah lama.",["naskhah","helai","keping","batang"],E.naskhah)
+  ]
+ };
+
+ Object.keys(NEW).forEach(sid=>{
+  const m = SUBJECT_COURSES.bm.find(x=>x.id===sid);
+  const l = m.lessons[0];
+  NEW[sid].forEach(x=>l.items.push(x));
+  l.draw = l.items.length;
+ });
+})();
+
 /* ---------- UI strings ---------- */
 const UI = {
  zh:{bmTitle:"Mini Build Mission",bmSub:"本课收官任务：连说 3–5 句关于你自己的话。不评分、不上传、没有标准答案——开口表达就是目标。",bmHint:"上面只是示范。请换成你自己的真实资料来说。",gfTitle:"推荐学习路径",gfSub:"系统建议按这个顺序学习本模块：",gfFree:"你也可以现在就探索这一关——学习的自由在你手上。",gfBack:"返回",gfBossLocked:"👑 Boss 是阶段毕业战：完成本模块第 1–4 关后自动解锁。",continue:"Continue",check:"Check",start:"Start",resume:"Resume",startLesson:"Start Lesson",correct:"Correct!",wrong:"Not quite",answerIs:"Correct answer:",vocab:"Vocabulary",patterns:"Sentence Patterns",fill:"Fill in the Blank",sub:"Substitution",order:"Word Order",trans:"Translation",mcq:"Multiple Choice",dialog:"Dialogue",boss:"BOSS CHALLENGE",lessonDone:"Lesson Complete!",bossDone:"Boss Defeated!",resSub:"Lesson complete. Next lesson unlocked.",accuracy:"Accuracy",locked:"Locked",done:"Done",go:"In progress",new:"Start",lesson:"Lesson",lessonU:"",module:"Module",bonus:"Completion bonus",bossBonus:"Boss bonus",heroNew:"Start your English journey here.",heroCont:"Continue where you left off.",allDone:"Congratulations! You finished the whole Level 1! 🎉",step:"Step",sceneLbl:"Scene",you:"You",changeLang:"Change explanation language?",menuTitle:"Menu",cancel:"Close",saveLocal:"Save to Device",quitYes:"Quit",quitNo:"Keep Learning",soundOn:"🔊 Sound on",soundOff:"🔇 Sound off",reviewLbl:"Today's Review",reviewN:"{n} questions to review",reviewNow:"Review",allCaught:"All caught up 🎉",noReview:"No review needed right now.",reviewDone:"Review Complete!",clearedMsg:"{c} cleared · {r} still to review.",reviewAgain:"Keep Reviewing",mistakes:"Mistakes to Review",praise:["Correct!","Excellent!","Great job!","Perfect!","Keep it up!"],combo:"Combo",nextUp:"Next",backHome:"Home",dailyGoal:"Daily Goal",goalDone:"🎉 Daily goal reached!",courseProg:"Course Progress",streakMile:"🔥 {n} days in a row! Amazing!",navHome:"Map",navProfile:"Profile",achTitle:"Achievements",statLessons:"Lessons",statStreak:"Day Streak",student:"Murid",editName:"Edit name",saveName:"Save",cpSub:"Level 1 · Construct",startFlag:"START HERE",toNext:"{n} XP to Lv {lv}",listen:"Listening Match",meaningIs:"Meaning:",nlTag:"Next Level",nlLocked:"Locked · {n}/25 lessons",nlSoon:"Coming soon 🎉",obTitle:"Welcome! 👋",obSkip:"Skip",speakTitle:"Speak Up",record:"Record",stopBtn:"Stop",play:"Play",tryAgain:"Try Again",speakSay:"Say this sentence:",recState:"Recording…",getReady:"Get ready…",speakNow:"Speak now!",saving:"Saving…",vocabSub:"先认读这些单词，再继续。",tapSpk:"点喇叭按钮听单词发音；点选词块时也会自动朗读。",patternsSub:"___ 是可替换的位置。",fillSub:"选出正确的词。",subSub:"点选一个词，替换进句型。",subBuilt:"很好！你造了这个句子：",orderSub:"点击单词，排出正确顺序。",transSub:"把句子翻译成英文（点词组句）。",mcqSub:"选出最合适的答案。",dialogSub:"点词组句，完成你的台词。",bossSub:"无提示！靠自己完成对话。",reviewFrom:"来自你之前做错的题目，答对后会从这里移除。",quit:"退出本关？本关进度不会保存。",menuSub:"切换解释语言，或把进度保存到本设备（进度也会自动保存）。记住每道题的重点，考试时就更容易复盘。",saved:"✓ 已保存到本设备（刷新后会恢复）",savedMem:"已保存到本次会话（此浏览器不支持本地存储）",listenSub:"点喇叭听发音，再点对应的英文单词，把它们配对。",nlDesc:"Level 2 · Convey：学会清楚传达完整信息——讲述经历、说明原因、表达感受和计划，把句子连成自然的小段落。",nlToastLocked:"完成全部 25 关即可解锁 Level 2。继续加油！",nlToastSoon:"🎉 你已完成 Level 1！Level 2 (Convey) 正在制作中，敬请期待。",obSub:"我们要怎么称呼你？你的名字会出现在练习里（例如 My name is …），之后也可以在 Profile 里修改。",obHello:"你好，{name}！",listenMuted:"声音已关闭，本听力练习已跳过。想练听力可在右上角打开声音。",speakSub:"先开口说，再听听自己的声音；想重来就再录一次。不评分、不上传，录音只保存在你自己的设备里。",speakDenied:"无法使用麦克风（可能未授权）。没关系，点 Continue 继续，不影响通关。",speakSaved:"✓ 已录好，保存在本机。点 Play 听听自己的发音！",speakSavedHint:"找到你上次的录音了，点 Play 可以回听，或再录一次。",speakWaitHint:"按 Record 后先别说话——看到 “Speak now” 再开始说，录音会更完整。"},

@@ -827,6 +827,31 @@ body.sound-off .spk{opacity:.3;pointer-events:none}
 .lb-opt.w .lb-mk{ color:var(--bad-d); }
 .lb-tag{ margin-left:auto; font-size:10.5px; font-weight:800; padding:1px 8px; border-radius:99px; background:var(--bad); color:#fff; white-space:nowrap; }
 .lb-tag.ok{ background:var(--success); }
+
+/* ===== 连线题 match（左右配对 + SVG 连线） ===== */
+.mt-hint{ font-size:13px; color:var(--muted); margin:2px 0 12px; }
+.mt-wrap{ position:relative; display:flex; gap:36px; align-items:flex-start; }
+.mt-svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1; overflow:visible; }
+.mt-col{ flex:1; display:flex; flex-direction:column; gap:12px; position:relative; z-index:2; min-width:0; }
+.mt-l,.mt-r{ display:flex; align-items:center; gap:8px; width:100%; box-sizing:border-box;
+  border:1.5px solid var(--line); border-radius:14px; background:var(--surface); color:var(--ink);
+  font:inherit; font-size:14.5px; font-weight:600; line-height:1.4; padding:11px 12px; cursor:pointer;
+  text-align:left; position:relative; transition:border-color .15s, background .15s; }
+.mt-txt{ flex:1; min-width:0; }
+.mt-port{ width:13px; height:13px; border-radius:50%; border:2px solid var(--brand); background:var(--surface); flex:none; }
+.mt-l.sel,.mt-r.sel{ border-color:var(--brand); background:color-mix(in srgb,var(--brand) 12%,var(--surface)); }
+.mt-l.paired,.mt-r.paired{ border-color:var(--brand); }
+.mt-l.paired .mt-port,.mt-r.paired .mt-port{ background:var(--brand); }
+.mt-num{ position:absolute; top:-7px; width:18px; height:18px; border-radius:50%; background:var(--brand); color:#fff;
+  font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; z-index:3; }
+.mt-left .mt-num{ right:-7px; }
+.mt-right .mt-num{ left:-7px; }
+.mt-l.right,.mt-r.right{ border-color:var(--success); background:var(--success-soft); }
+.mt-l.wrong,.mt-r.wrong{ border-color:var(--bad); background:var(--bad-soft); }
+.mt-l.done,.mt-r.done{ cursor:default; }
+.mt-line{ stroke:var(--brand); stroke-width:3; stroke-linecap:round; fill:none; }
+.mt-line.right{ stroke:var(--success); }
+.mt-line.wrong{ stroke:var(--bad); }
 </style>
 </head>
 <body>
@@ -1872,6 +1897,243 @@ const VARIANTS = {
  });
 })();
 
+/* ============================================================
+   科学 · 第四章「人类：骨骼 · 循环 · 呼吸」(sci4)  —— 来自 5A 考卷
+   A组→选择题  B组→连线题(match)  C组→简答题(写出来+看参考答案)
+   人类属事实类(解剖知识)：mcq 变体只「换问法、答案不变」，不自创新事实。
+   图依赖题已转成概念题；纯图题(食物网/电路图选项)未纳入本章。
+   ⚠️ 答案由知识判定(原卷无标答)，请抽查核对。
+   ============================================================ */
+(function(){
+ const mc = (id,q,o,ez,vq) => { const it={kind:"mcq",id,q,o,a:0,e:{zh:ez}}; if(vq) it.variants=[{q:vq,o:o.slice(),a:0,e:{zh:ez}}]; return it; };
+ const sa = (id,q,mz,ez) => ({kind:"saq",id,q,model:{zh:mz},e:{zh:ez||""}});
+
+ const M = {
+  id:"sci4",
+  title:{zh:"人类：骨骼·循环·呼吸"},
+  lessons:[
+   { type:"grammar", t:{zh:"骨骼与关节（A组）"}, draw:4,
+     recap:[{ic:"🦴", zh:"脊柱支撑身体+保护脊髓；肋骨像笼子保护内脏；软骨减少关节摩擦；关节让身体能活动。"}],
+     items:[
+      mc("sci411","下列哪一项是脊柱（脊椎）的功能？",
+        ["支撑头部和身体，并保护脊髓","保护脑部不受撞击","形成脸部的支架","保护肺和心脏"],
+        "脊柱支撑头部和身体，并保护里面的脊髓。","脊柱对人体的主要功能是什么？"),
+      mc("sci412","像一个坚固的笼子，保护肺、心脏和肝的骨骼是什么？",
+        ["肋骨","脊柱","头骨","肩胛骨"],
+        "肋骨像笼子，保护胸腔里的内脏。","保护胸腔内肺和心脏的骨骼是？"),
+      mc("sci413","连接头部与颈部的关节，主要功能是什么？",
+        ["使颈部和头部可以活动","使膝盖可以弯曲","使腰部可以转动","使双手可以抬起"],
+        "颈部的关节让头和颈能够转动、点头。","颈部的关节让我们能做什么动作？"),
+      mc("sci414","关节中的软骨有什么作用？",
+        ["减少骨头活动时之间的摩擦","固定骨头的位置","帮助骨头生长","输送血液到骨头"],
+        "软骨在关节处减少骨头之间的摩擦。","两块骨头相接处的软骨，主要帮助什么？")
+     ]},
+   { type:"grammar", t:{zh:"血液循环与呼吸（A组）"}, draw:5,
+     recap:[{ic:"❤️", zh:"循环系统送氧气养分+带走废物；肺做气体交换(吸氧、排二氧化碳)；废物靠循环+排泄系统排出；少吃高油盐糖快餐护血管。"}],
+     items:[
+      mc("sci421","刚从肺部流回心脏的血液，含量较高的气体是什么？",
+        ["氧气","二氧化碳","氮气","水蒸气"],
+        "血液在肺部吸收了氧气，所以含氧较高。","经过肺部完成气体交换后，血液里增多的气体是？"),
+      mc("sci422","血液循环系统对人体最重要的功能是什么？",
+        ["输送氧气和营养素，并带走废物","保护人体的重要器官","产生营养素帮助内脏生长","制造新的骨头"],
+        "循环系统把氧气、营养送到全身，并带走废物。","血液在全身流动，主要是为了做什么？"),
+      mc("sci423","人体生命过程产生的废物，主要通过哪些系统排出体外？",
+        ["血液循环系统和排泄系统","血液循环系统和消化系统","血液循环系统和骨骼系统","血液循环系统和神经系统"],
+        "废物先由循环系统带走，再由排泄系统排出。","废物从人体各部分被带走并排出，需要哪两个系统合作？"),
+      mc("sci424","为什么人被食物噎着后会感觉呼吸困难？",
+        ["食物卡在食道入口，同时阻挡空气进入气管","食物噎在喉部，导致气管肿胀","食道充血，空气无法进入气管","食物停留在食道，阻挡空气流入胃部"],
+        "食物卡在食道入口，挡住了空气进入气管。","食物卡住后呼吸困难，是因为什么被阻挡了？"),
+      mc("sci425","为了避免血管阻塞，饮食应少油、少盐、少糖。下列哪类食物不宜多吃？",
+        ["汉堡、薯条等油炸快餐","新鲜蔬菜和水果","白开水","清蒸鱼"],
+        "高油、高盐、高糖的快餐不宜多吃。","哪一类食物吃太多容易造成血管阻塞，应该少吃？")
+     ]},
+   { type:"grammar", t:{zh:"综合：连线 + 解释（Boss）"}, draw:5, boss:true,
+     recap:[{ic:"🧩", zh:"心脏推血‧肺换气‧肋骨护内脏‧脊柱撑身体；保护骨骼要适量运动 + 吃得有营养(含钙)。"}],
+     items:[
+      {kind:"match", id:"sci431", q:"把人体的器官／骨骼和它的功能连起来。",
+        pairs:[
+         {l:"心脏", r:"把血液推送到全身"},
+         {l:"肺",   r:"进行气体交换的场所"},
+         {l:"肋骨", r:"保护肺和心脏等内脏"},
+         {l:"脊柱", r:"支撑头部和身体"}
+        ],
+        e:{zh:"心脏推送血液、肺进行气体交换、肋骨保护内脏、脊柱支撑身体。"}},
+      mc("sci432","关于进出肺部的血液，下列哪一组说明正确？",
+        ["进入肺的血液含较多二氧化碳；离开肺的血液含较多氧气","进入肺的血液含较多氧气；离开肺的含较多废物","进入肺的含较多营养；离开肺的含较多二氧化碳","进入和离开肺的血液成分相同"],
+        "进肺的血含较多二氧化碳；出肺的血含较多氧气。"),
+      sa("sci433","成熟的榴梿可能从树上掉下来砸到头。你建议何伯伯采取什么保护措施？请解释理由。",
+        "戴上安全帽（头盔）。因为安全帽由坚硬的材料制成，能保护头部，避免被掉落的榴梿砸伤。",
+        "重点：①写出方法(戴安全帽/头盔)②解释(坚硬、能护头)。"),
+      sa("sci434","在我们的生长期，骨头会怎样变化？请作出解释。",
+        "骨头会逐渐变长和变粗（变大）。因为骨头长大，我们才会长高、身体变大。",
+        "重点：变长、变粗(变大)。"),
+      sa("sci435","为什么「适量运动 + 富含营养的饮食」有助于保护骨骼系统？请各给一个理由。",
+        "①适量的运动能使骨骼和肌肉更强健、更结实；②富含营养（尤其含钙）的食物能使骨头更强壮、不易折断。",
+        "重点：运动→骨骼更强健；营养(含钙)→骨头更强壮。")
+     ]}
+  ]
+ };
+
+ function zf(o){ if(o && typeof o==="object" && o.zh){ if(!o.ms)o.ms=o.zh; if(!o.en)o.en=o.zh; } }
+ zf(M.title);
+ M.lessons.forEach(l=>{ zf(l.t); (l.recap||[]).forEach(zf);
+   (l.items||[]).forEach(it=>{ zf(it.e); zf(it.model); (it.variants||[]).forEach(v=>zf(v.e)); });
+ });
+ SUBJECT_COURSES.sci.push(M);
+})();
+
+/* ============================================================
+   科学 5A · 阶段二：第五章 动物 / 第六章 植物 / 第七章 电
+   A组→mcq  B组/配对→match  C组解释/画图→saq(写出来+看参考答案)
+   事实类：mcq 变体只换问法、答案不变。纯图题(食物网图选项/电路图选项)未纳入。
+   ⚠️ 原卷无标答，答案由知识判定，请抽查核对(尤其已标注的几道)。
+   ============================================================ */
+(function(){
+ const mc = (id,q,o,ez,vq) => { const it={kind:"mcq",id,q,o,a:0,e:{zh:ez}}; if(vq) it.variants=[{q:vq,o:o.slice(),a:0,e:{zh:ez}}]; return it; };
+ const sa = (id,q,mz,ez) => ({kind:"saq",id,q,model:{zh:mz},e:{zh:ez||""}});
+ const mt = (id,q,pairs,ez) => ({kind:"match",id,q,pairs,e:{zh:ez}});
+
+ const ANIMAL = {
+  id:"sci5", title:{zh:"动物：自卫与食物网"},
+  lessons:[
+   { type:"grammar", t:{zh:"动物的自卫方法（A组）"}, draw:3,
+     recap:[{ic:"🦓", zh:"动物自卫各有招：斑马踢腿、乌龟缩壳、壁虎断尾、竹节虫伪装、群居共同御敌。"}],
+     items:[
+      mc("sci511","斑马受到天敌威胁时，会用什么方法保护自己？",
+        ["用强壮的腿把天敌踢走","用毒牙攻击天敌","用锋利的爪击退天敌","用尾巴卷住天敌"],
+        "斑马用强壮的后腿踢开天敌。","斑马遇到天敌时，主要靠身体哪个部位自卫？"),
+      mc("sci512","某动物身上有硬壳，遇到危险时会缩进壳里。它最可能是什么？",
+        ["乌龟","刺猬","螃蟹","青蛙"],
+        "有硬壳、能缩进壳里的是乌龟。","遇到危险时把身体缩进坚硬外壳里的动物是？"),
+      mc("sci513","为什么大象常常成群一起生活？",
+        ["为了共同抵抗天敌","为了大量繁殖","为了分享水源","为了争夺食物"],
+        "群居能共同抵御天敌，更安全。","大象成群生活，主要的好处是什么？")
+     ]},
+   { type:"grammar", t:{zh:"食物网（A组）"}, draw:3,
+     recap:[{ic:"🕸️", zh:"食物网：箭头指向『被吃的一方』；生产者(植物)是基础、被多种动物吃；吃相同食物=竞争；生产者减少→全体减少。"}],
+     items:[
+      mc("sci521","稻田食物网：J→蚱蜢→青蛙→蛇；J→松鼠；J→K。J 和 K 最可能是什么？",
+        ["J＝稻，K＝麻雀","J＝稻，K＝老鹰","J＝鸡，K＝螳螂","J＝麻雀，K＝猫头鹰"],
+        "J 被多种动物吃→是生产者(稻)；K 直接吃稻→草食的麻雀。","上述稻田食物网里，作为生产者的 J 和直接吃 J 的 K 分别是？"),
+      mc("sci522","湖里：水藻被蝌蚪和小虾吃；小鱼吃小虾；大鱼吃小鱼；鸭子吃小鱼。哪两种动物会竞争食物？",
+        ["蝌蚪和小虾","蝌蚪和鸭子","小鱼和鸭子","大鱼和蝌蚪"],
+        "蝌蚪和小虾都吃水藻→竞争同一种食物。","上述湖泊里，因为吃相同食物而互相竞争的是哪两种动物？"),
+      mc("sci523","如果栖息地中的生产者（植物）大量枯萎，会带来什么影响？",
+        ["所有相关的生物数量都会减少","肉食动物的数量会增加","杂食动物的数量会增加","只有草食动物的数量会减少"],
+        "生产者是食物网的基础，它减少→连锁影响，所有生物都减少。","生产者大量死亡后，对食物网中其他生物的数量有什么影响？")
+     ]},
+   { type:"grammar", t:{zh:"综合：连线 + 解释（Boss）"}, draw:3, boss:true,
+     recap:[{ic:"🛡️", zh:"自卫方法可分为外形特征(硬壳、尖刺、假眼斑)和特殊本能(断尾、伪装、群居)。"}],
+     items:[
+      mt("sci531","把动物和它的自卫方法连起来。",
+        [{l:"斑马",r:"用强壮的腿踢开天敌"},{l:"乌龟",r:"缩进坚硬的壳里"},{l:"壁虎",r:"自断尾巴逃生"},{l:"竹节虫",r:"伪装成树枝（拟态）"}],
+        "斑马踢腿、乌龟缩壳、壁虎断尾、竹节虫拟态。"),
+      sa("sci532","竹节虫和蝴蝶鱼（身上有假眼斑）各用什么方法自卫？",
+        "竹节虫：身体像树枝，伪装（拟态）起来，不易被天敌发现；蝴蝶鱼：身上的假眼斑能迷惑、吓退天敌，保护真正的头部。",
+        "重点：竹节虫＝伪装/拟态；蝴蝶鱼＝假眼斑迷惑天敌。"),
+      sa("sci533","盾牌由坚硬材料制成，用来保护身体。它和动物的哪种自卫特征最相似？请解释。",
+        "和乌龟的硬壳最相似。因为坚硬的外壳能遮蔽、保护身体，抵挡敌人的攻击。",
+        "重点：硬壳（如乌龟）；坚硬能挡攻击。")
+     ]}
+  ]
+ };
+
+ const PLANT = {
+  id:"sci6", title:{zh:"植物：适应气候与种子传播"},
+  lessons:[
+   { type:"grammar", t:{zh:"适应恶劣气候（A组）"}, draw:3,
+     recap:[{ic:"🌵", zh:"植物适应恶劣气候：卷叶/针叶减少水分流失；粗厚树皮耐寒；茎柔韧有弹性抗强风。"}],
+     items:[
+      mc("sci611","为什么有些蕨类的叶子是卷曲的？",
+        ["减少叶子曝露在阳光下的面积，减少水分流失","让叶子不易被折断","方便随风摆动","减少风的阻力"],
+        "卷叶减少受光面积→减少水分蒸发流失。","蕨类把叶子卷起来，主要是为了减少什么？"),
+      mc("sci612","某植物有针状的叶子和粗厚的树皮，能适应寒冷恶劣的气候。它最可能是什么？",
+        ["松树","枫树","橡胶树","面包树"],
+        "针状叶+粗厚树皮=松树(适应寒冷)。","针状叶、粗厚树皮、能耐寒的植物是？"),
+      mc("sci613","为什么茅草（lalang）被强风吹袭时不容易折断？",
+        ["茎坚韧而有弹性，能随风弯曲","叶子是羽状的","根能深入土壤","长有出土的气根"],
+        "茎柔韧有弹性→随风弯而不断。","茅草能在强风中不折断，靠的是茎的什么特性？")
+     ]},
+   { type:"grammar", t:{zh:"种子传播与重要性（A组）"}, draw:4,
+     recap:[{ic:"🌱", zh:"种子传播：风力(轻、有细毛)、水力、自动爆裂(弹射)、动物/人；繁衍后代→避免灭绝、维持生态平衡。"}],
+     items:[
+      mc("sci621","为什么羊角豆（秋葵）干瘪后会爆裂开来？",
+        ["把种子弹射到远处传播","方便动物来吃","让种子随风飘散","让种子掉在原地"],
+        "果实爆裂=自动弹射，把种子传到远处。","羊角豆果实爆裂，目的是把种子怎么样？"),
+      mc("sci622","某植物的种子呈伞状、细小、长有细毛。它最可能靠什么方法传播种子？",
+        ["靠风力","靠水力","靠自动爆裂","靠人类或动物"],
+        "轻、有细毛、伞状→容易被风吹走=风力传播。","种子轻盈、有细毛、像降落伞，靠什么传播？"),
+      mc("sci623","下列哪两种植物靠『落叶（掉叶子）』来适应恶劣气候？",
+        ["枫树和橡胶树","姜黄和玉蜀黍","枫树和姜黄","橡胶树和玉蜀黍"],
+        "枫树、橡胶树会落叶，以减少水分流失/度过恶劣季节。","以『落叶』方式适应气候的是哪两种植物？"),
+      mc("sci624","动物和植物确保物种延续（生存）的重要性是什么？",
+        ["避免物种灭绝、维持生态平衡","避免空气污染、保持气候适中","避免空气污染、避免灭绝","维持生态平衡、保持气候适中"],
+        "繁衍后代→避免灭绝+维持生态平衡。","为什么动植物要繁衍后代、确保物种生存？")
+     ]},
+   { type:"grammar", t:{zh:"综合：连线 + 解释（Boss）"}, draw:4, boss:true,
+     recap:[{ic:"🌿", zh:"植物自卫：尖刺、毒素、气味、触碰合拢；沙漠植物肥厚茎储水、针状叶减少失水。"}],
+     items:[
+      mt("sci631","把植物和它的自卫特征连起来。",
+        [{l:"仙人掌",r:"长有尖刺"},{l:"夹竹桃",r:"含有毒素"},{l:"香叶天竺葵",r:"散发气味驱赶动物"},{l:"含羞草",r:"被触碰时叶子合拢"}],
+        "仙人掌尖刺、夹竹桃毒素、香叶天竺葵气味、含羞草触碰合拢。"),
+      mc("sci632","关于棉花种子的传播，下列哪一组说明正确？",
+        ["种子轻盈，靠风力传播","种子有钩刺，靠动物传播","种子很重，靠水力传播","种子靠自动爆裂传播"],
+        "棉花种子轻盈、带绒毛→靠风力传播。","棉花的种子轻、带绒毛，它靠什么传播？"),
+      sa("sci633","围墙顶端常装『带刺铁丝网』。它最可能参考了植物的哪种自卫特征？有什么用途？",
+        "参考了植物的尖刺（如仙人掌、九重葛茎上的刺）。用途：防止人或动物攀爬越过围墙，保护里面的安全。",
+        "重点：尖刺；防攀爬/入侵。"),
+      sa("sci634","松树和仙人掌都能适应恶劣气候。它们的『茎』有什么不同？『叶』有什么共同点？",
+        "茎不同：松树是普通的木质茎；仙人掌的茎肥厚多肉，能储存水分。叶共同点：两者的叶都细小（针状），能减少水分流失。",
+        "重点：茎—仙人掌肥厚储水；叶—都针状/细小减少失水。")
+     ]}
+  ]
+ };
+
+ const ELEC = {
+  id:"sci7", title:{zh:"电：电路与灯泡"},
+  lessons:[
+   { type:"grammar", t:{zh:"电路与灯泡的亮度（A组）"}, draw:4,
+     recap:[{ic:"💡", zh:"串联：一条通路，一坏全灭；并联：多条通路，一坏其余照亮；电池越多越亮、灯泡越多越暗；开关位置不影响亮度。"}],
+     items:[
+      mc("sci711","在串联电路中，如果其中一个灯泡坏了，会发生什么？",
+        ["所有灯泡都不会发亮","只有旁边的灯泡会亮","其他灯泡会更亮","只有一个灯泡熄灭"],
+        "串联只有一条通路，一个坏→电流中断→全部不亮。","串联电路里一个灯泡烧坏后，其余灯泡会怎样？"),
+      mc("sci712","在并联电路中，如果其中一个灯泡坏了，其他灯泡会怎样？",
+        ["仍然会发亮","也会全部熄灭","会变得更暗","会爆掉"],
+        "并联有多条通路，一条断，其他仍通电→继续发亮。","并联电路里一个灯泡坏了，其他灯泡还会亮吗？"),
+      mc("sci713","下列哪一项『不会』影响灯泡的亮度？",
+        ["开关的位置","灯泡的数量","电路的种类（串联或并联）","干电池的数量"],
+        "开关只管通断，位置不影响亮度；数量/种类/电池数会影响。","下列因素中，跟灯泡亮度无关的是哪一个？"),
+      mc("sci714","要让灯泡发出更亮的光，可以怎么做？",
+        ["增加干电池的数量","增加灯泡的数量","把电线加长","换一个更大的开关"],
+        "增加干电池→电流更强→灯泡更亮(增加灯泡反而变暗)。","想让灯泡更亮，应该增加什么？")
+     ]},
+   { type:"grammar", t:{zh:"综合：连线 + 解释（Boss）"}, draw:3, boss:true,
+     recap:[{ic:"🔋", zh:"实验：操纵变数=灯泡数量、反应变数=亮度；结论写『越…越…』并用数据(1个最亮、3个最暗)来支持。"}],
+     items:[
+      mt("sci721","把电路概念和它的特征连起来。",
+        [{l:"串联电路",r:"只有一条电流通路"},{l:"并联电路",r:"有多条电流通路"},{l:"增加灯泡的数量",r:"灯泡变暗"},{l:"增加干电池的数量",r:"灯泡变亮"}],
+        "串联=一条通路；并联=多条通路；灯泡多→变暗；电池多→变亮。"),
+      sa("sci722","实验：在串联电路中逐个增加灯泡的数量，观察灯泡的亮度。写出这项实验的操纵性变数和反应性变数。",
+        "操纵性变数：灯泡的数量；反应性变数：灯泡的亮度。",
+        "重点：操纵=灯泡数量；反应=灯泡亮度。"),
+      sa("sci723","实验结果：1个灯泡—明亮、2个—较暗淡、3个—最暗淡。写出结论，并用实验数据来支持。",
+        "结论：在串联电路中，灯泡的数量越多，灯泡就越暗（亮度越低）。数据支持：1个灯泡时最亮，3个灯泡时最暗。",
+        "重点：数量越多越暗；用『1个最亮、3个最暗』支持。")
+     ]}
+  ]
+ };
+
+ function zf(o){ if(o && typeof o==="object" && o.zh){ if(!o.ms)o.ms=o.zh; if(!o.en)o.en=o.zh; } }
+ [ANIMAL,PLANT,ELEC].forEach(M=>{
+  zf(M.title);
+  M.lessons.forEach(l=>{ zf(l.t); (l.recap||[]).forEach(zf);
+    (l.items||[]).forEach(it=>{ zf(it.e); zf(it.model); (it.variants||[]).forEach(v=>zf(v.e)); });
+  });
+  SUBJECT_COURSES.sci.push(M);
+ });
+})();
+
 /* ---------- UI strings ---------- */
 const UI = {
  zh:{bmTitle:"Mini Build Mission",bmSub:"本课收官任务：连说 3–5 句关于你自己的话。不评分、不上传、没有标准答案——开口表达就是目标。",bmHint:"上面只是示范。请换成你自己的真实资料来说。",gfTitle:"推荐学习路径",gfSub:"系统建议按这个顺序学习本模块：",gfFree:"你也可以现在就探索这一关——学习的自由在你手上。",gfBack:"返回",gfBossLocked:"👑 Boss 是阶段毕业战：完成本模块第 1–4 关后自动解锁。",continue:"Continue",check:"Check",start:"Start",resume:"Resume",startLesson:"Start Lesson",correct:"Correct!",wrong:"Not quite",answerIs:"Correct answer:",vocab:"Vocabulary",patterns:"Sentence Patterns",fill:"Fill in the Blank",sub:"Substitution",order:"Word Order",trans:"Translation",mcq:"Multiple Choice",dialog:"Dialogue",boss:"BOSS CHALLENGE",lessonDone:"Lesson Complete!",bossDone:"Boss Defeated!",resSub:"Lesson complete. Next lesson unlocked.",accuracy:"Accuracy",locked:"Locked",done:"Done",go:"In progress",new:"Start",lesson:"Lesson",lessonU:"",module:"Module",bonus:"Completion bonus",bossBonus:"Boss bonus",heroNew:"Start your English journey here.",heroCont:"Continue where you left off.",allDone:"Congratulations! You finished the whole Level 1! 🎉",step:"Step",sceneLbl:"Scene",you:"You",changeLang:"Change explanation language?",menuTitle:"Menu",cancel:"Close",saveLocal:"Save to Device",quitYes:"Quit",quitNo:"Keep Learning",soundOn:"🔊 Sound on",soundOff:"🔇 Sound off",reviewLbl:"Today's Review",reviewN:"{n} questions to review",reviewNow:"Review",allCaught:"All caught up 🎉",noReview:"No review needed right now.",reviewDone:"Review Complete!",clearedMsg:"{c} cleared · {r} still to review.",reviewAgain:"Keep Reviewing",mistakes:"Mistakes to Review",praise:["Correct!","Excellent!","Great job!","Perfect!","Keep it up!"],combo:"Combo",nextUp:"Next",backHome:"Home",dailyGoal:"Daily Goal",goalDone:"🎉 Daily goal reached!",courseProg:"Course Progress",streakMile:"🔥 {n} days in a row! Amazing!",navHome:"Map",navProfile:"Profile",achTitle:"Achievements",statLessons:"Lessons",statStreak:"Day Streak",student:"Murid",editName:"Edit name",saveName:"Save",cpSub:"Level 1 · Construct",startFlag:"START HERE",toNext:"{n} XP to Lv {lv}",listen:"Listening Match",meaningIs:"Meaning:",nlTag:"Next Level",nlLocked:"Locked · {n}/25 lessons",nlSoon:"Coming soon 🎉",obTitle:"Welcome! 👋",obSkip:"Skip",speakTitle:"Speak Up",record:"Record",stopBtn:"Stop",play:"Play",tryAgain:"Try Again",speakSay:"Say this sentence:",recState:"Recording…",getReady:"Get ready…",speakNow:"Speak now!",saving:"Saving…",vocabSub:"先认读这些单词，再继续。",tapSpk:"点喇叭按钮听单词发音；点选词块时也会自动朗读。",patternsSub:"___ 是可替换的位置。",fillSub:"选出正确的词。",subSub:"点选一个词，替换进句型。",subBuilt:"很好！你造了这个句子：",orderSub:"点击单词，排出正确顺序。",transSub:"把句子翻译成英文（点词组句）。",mcqSub:"选出最合适的答案。",dialogSub:"点词组句，完成你的台词。",bossSub:"无提示！靠自己完成对话。",reviewFrom:"来自你之前做错的题目，答对后会从这里移除。",quit:"退出本关？本关进度不会保存。",menuSub:"切换解释语言，或把进度保存到本设备（进度也会自动保存）。记住每道题的重点，考试时就更容易复盘。",saved:"✓ 已保存到本设备（刷新后会恢复）",savedMem:"已保存到本次会话（此浏览器不支持本地存储）",listenSub:"点喇叭听发音，再点对应的英文单词，把它们配对。",nlDesc:"Level 2 · Convey：学会清楚传达完整信息——讲述经历、说明原因、表达感受和计划，把句子连成自然的小段落。",nlToastLocked:"完成全部 25 关即可解锁 Level 2。继续加油！",nlToastSoon:"🎉 你已完成 Level 1！Level 2 (Convey) 正在制作中，敬请期待。",obSub:"我们要怎么称呼你？你的名字会出现在练习里（例如 My name is …），之后也可以在 Profile 里修改。",obHello:"你好，{name}！",listenMuted:"声音已关闭，本听力练习已跳过。想练听力可在右上角打开声音。",speakSub:"先开口说，再听听自己的声音；想重来就再录一次。不评分、不上传，录音只保存在你自己的设备里。",speakDenied:"无法使用麦克风（可能未授权）。没关系，点 Continue 继续，不影响通关。",speakSaved:"✓ 已录好，保存在本机。点 Play 听听自己的发音！",speakSavedHint:"找到你上次的录音了，点 Play 可以回听，或再录一次。",speakWaitHint:"按 Record 后先别说话——看到 “Speak now” 再开始说，录音会更完整。"},
@@ -1890,6 +2152,7 @@ const EXAM_UI = {
   cpSub:"UPSA · Tahun 5",
   passage:"Petikan", passageSub:"Baca petikan dengan teliti, kemudian jawab soalan.",
   examMcq:"Soalan Objektif", examMcqSub:"Pilih jawapan yang paling sesuai.",
+  matchT:"Soalan Padanan", matchSub:"Ketik kiri, kemudian ketik kanan untuk memadankan.", matchAllCorrect:"Semua padanan betul!",
   examFill:"Isi Tempat Kosong", examFillSub:"Pilih perkataan yang betul.",
   saqT:"Soalan Jawapan Pendek", saqSub:"Tulis jawapan kamu, kemudian semak dengan jawapan contoh.",
   writeT:"Penulisan", writeSub:"Tulis jawapan kamu (lebih kurang {n} patah perkataan).",
@@ -1911,6 +2174,7 @@ const EXAM_UI = {
   cpSub:"UPSA · 五年级",
   passage:"阅读篇章", passageSub:"仔细阅读以下篇章，然后作答。",
   examMcq:"选择题", examMcqSub:"选出最合适的答案。",
+  matchT:"连线题", matchSub:"先点左边，再点右边，把它们配对起来。", matchAllCorrect:"全部配对正确！",
   examFill:"填空题", examFillSub:"选出正确的词。",
   saqT:"简答题", saqSub:"写下你的答案，再对照范答自我检查。",
   writeT:"写作", writeSub:"写下你的作答（约 {n} 字）。",
@@ -1932,6 +2196,7 @@ const EXAM_UI = {
   cpSub:"UPSA · Year 5",
   passage:"Passage", passageSub:"Read the passage carefully, then answer.",
   examMcq:"Multiple Choice", examMcqSub:"Choose the best answer.",
+  matchT:"Matching", matchSub:"Tap left, then tap right to connect them.", matchAllCorrect:"All matched correctly!",
   examFill:"Fill in the Blank", examFillSub:"Choose the correct word.",
   saqT:"Short Answer", saqSub:"Write your answer, then check the model answer.",
   writeT:"Writing", writeSub:"Write your answer (about {n} words).",
@@ -2704,6 +2969,62 @@ function startLesson(mi,li){
   o.querySelector("#lbnext").onclick=()=>{ if(cur<list.length-1){ cur++; draw(); } };
   draw();
  }
+
+ /* ===== 连线题(match) 互动：点左→点右配对，画线，检查评分（沿用 award/feedback/review） ===== */
+ function setupMatch(st, it, pairs){
+  const wrap = document.getElementById("mtwrap"); if(!wrap) return;
+  const svg = document.getElementById("mtsvg");
+  const lefts = [...wrap.querySelectorAll(".mt-l")];
+  const rights = [...wrap.querySelectorAll(".mt-r")];
+  let selL = null;
+  const conn = {};          // leftIndex -> { rEl, pair }
+  function redraw(){
+   try{
+    const wr = wrap.getBoundingClientRect();
+    svg.setAttribute("width", wr.width); svg.setAttribute("height", wr.height);
+    svg.setAttribute("viewBox", "0 0 "+wr.width+" "+wr.height);
+    svg.innerHTML = Object.keys(conn).map(li=>{
+     const lp=lefts[li].querySelector(".mt-port").getBoundingClientRect();
+     const rp=conn[li].rEl.querySelector(".mt-port").getBoundingClientRect();
+     const x1=lp.left-wr.left+lp.width/2, y1=lp.top-wr.top+lp.height/2;
+     const x2=rp.left-wr.left+rp.width/2, y2=rp.top-wr.top+rp.height/2;
+     return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="mt-line ${conn[li].state||''}" />`;
+    }).join("");
+   }catch(e){}
+  }
+  function badges(){
+   lefts.concat(rights).forEach(el=>{ el.classList.remove("paired"); const b=el.querySelector(".mt-num"); if(b) b.remove(); });
+   let n=0;
+   Object.keys(conn).forEach(li=>{ n++;
+    lefts[li].classList.add("paired"); conn[li].rEl.classList.add("paired");
+    lefts[li].insertAdjacentHTML("beforeend", `<span class="mt-num">${n}</span>`);
+    conn[li].rEl.insertAdjacentHTML("afterbegin", `<span class="mt-num">${n}</span>`);
+   });
+  }
+  function update(){ badges(); redraw(); const go=document.getElementById("go"); if(go) go.disabled = Object.keys(conn).length !== pairs.length; }
+  lefts.forEach(l=>{ l.onclick=()=>{ if(l.classList.contains("done")) return;
+    lefts.forEach(x=>x.classList.remove("sel")); l.classList.add("sel"); selL=+l.dataset.li; }; });
+  rights.forEach(r=>{ r.onclick=()=>{ if(selL==null || r.classList.contains("done")) return;
+    Object.keys(conn).forEach(li=>{ if(conn[li].rEl===r) delete conn[li]; });   // a right can only be used once
+    conn[selL]={ rEl:r, pair:+r.dataset.pair };
+    lefts[selL].classList.remove("sel"); selL=null; update(); }; });
+  const go=document.getElementById("go");
+  go.onclick=()=>{
+   let ok=true;
+   lefts.forEach((l,i)=>{ const c=conn[i]; const good=!!c && c.pair===i;
+    if(!good) ok=false;
+    l.classList.add(good?"right":"wrong"); l.classList.add("done");
+    if(c){ c.rEl.classList.add(good?"right":"wrong"); c.rEl.classList.add("done"); c.state=good?"right":"wrong"; }
+   });
+   redraw();
+   lefts.forEach(l=>l.onclick=null); rights.forEach(r=>r.onclick=null);
+   const gained = award(5, ok);
+   trackAnswer(ok, st.id, px(it.q), T().matchAllCorrect, tri(it.e));
+   go.disabled = true;
+   showFeedback(ok, {correct:T().matchAllCorrect, expl:tri(it.e), xp:gained, onContinue:()=>nextStep()});
+  };
+  update();
+ }
  $("quitbtn").onclick = ()=>{ askConfirm(T().quit, T().quitYes, T().quitNo, ()=>{ P=null; hideFeedback(); killRec(); renderHome(); }); };
 
 function setProg(){
@@ -2785,7 +3106,22 @@ function renderStep(){
  { const _lb=lookbackList(); const _bb=$("lookbackbtn"); if(_bb){ if(_lb.length){ _bb.classList.remove("hidden"); const _ll=$("lookbacklbl"); if(_ll) _ll.textContent=T().lookbackBtn; _bb.onclick=()=>openLookback(); } else _bb.classList.add("hidden"); } }
 
 
- /* ===== exam-practice step types (Set 1+) ===== */
+/* ===== exam-practice step types (Set 1+) ===== */
+ if(st.kind==="match"){
+  const it = st.it;
+  const pairs = it.pairs;
+  const rights = shuffle(pairs.map((p,i)=>({txt:p.r, pair:i})));
+  const leftHTML = pairs.map((p,i)=>`<button type="button" class="mt-l" data-li="${i}"><span class="mt-txt">${esc(px(p.l))}</span><span class="mt-port"></span></button>`).join("");
+  const rightHTML = rights.map((r,j)=>`<button type="button" class="mt-r" data-ri="${j}" data-pair="${r.pair}"><span class="mt-port"></span><span class="mt-txt">${esc(px(r.txt))}</span></button>`).join("");
+  const inner = mascotBubble(esc(px(it.q)))
+   + `<div class="mt-hint">${esc(t.matchSub)}</div>`
+   + `<div class="mt-wrap" id="mtwrap"><svg class="mt-svg" id="mtsvg" preserveAspectRatio="none"></svg><div class="mt-col mt-left">${leftHTML}</div><div class="mt-col mt-right">${rightHTML}</div></div>`
+   + `<div id="fbslot"></div>`;
+  box.innerHTML = stepShell(stepNum+" \u00b7 +5 XP", esc(t.matchT), "", inner,
+   `<button class="btn btn-primary btn-block" id="go" disabled>${t.check}</button>`);
+  setupMatch(st, it, pairs);
+  return;
+ }
  if(st.kind==="passage"){
   const p = st.p;
   const inner = `<div class="readbox"><h4 class="readttl">${esc(tri(p.title))}</h4><div class="readbody">${esc(p.body).replace(/\n/g,"<br>")}</div></div>`;
